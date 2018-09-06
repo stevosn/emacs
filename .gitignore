@@ -1,6 +1,6 @@
 \%*
 .python-environments/
-.smex-items/
+.smex-items
 auto-save-list/
 elpa*
 recentf
