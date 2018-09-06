@@ -1,0 +1,8 @@
+\%*
+.python-environments/
+.smex-items
+auto-save-list/
+elpa*
+recentf
+session.*
+tramp*
