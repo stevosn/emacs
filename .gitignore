@@ -1,9 +1,8 @@
-	%backup%~
-	.python-environments/
-	.smex-items
-	auto-save-list/
-	elpa-25.2/
-	elpa/
+	%*%
+	.python-environments
+	.smex-items*
+	auto-save-list*
+	elpa*
 	recentf
 	session.*
-	tramp
+	tramp*
