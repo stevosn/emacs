@@ -6,3 +6,5 @@ elpa*
 recentf
 session.*
 tramp*
+init.el
+myinit.org
