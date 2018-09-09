@@ -3,7 +3,6 @@ put in
 (org-babel-load-file (expand-file-name "~/.emacs.d/myinit.org"))
 to read the orgfile as a myinit.el file! (which is created by org-babel..)
 * Interface tweaks
-
 #+BEGIN_SRC
 (tool-bar-mode -1)
 (global-set-key (kbd "<f5>") 'revert-buffer)
