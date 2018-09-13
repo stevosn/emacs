@@ -3,7 +3,7 @@ put in
 (org-babel-load-file (expand-file-name "~/.emacs.d/myinit.org"))
 to read the orgfile as a myinit.el file! (which is created by org-babel..)
 * benchmarking
-#+BEGIN_SRC
+#+BEGIN_SRC emacs-lisp
 (defun sanityinc/time-subtract-millis (b a)
   (* 1000.0 (float-time (time-subtract b a))))
 
@@ -69,12 +69,12 @@ LOAD-DURATION is the time taken in milliseconds to load FEATURE.")
 (add-hook 'after-init-hook 'sanityinc/show-init-time)
 #+END_SRC
 * Interface tweaks
-#+BEGIN_SRC
+#+BEGIN_SRC emacs-lisp
 (tool-bar-mode -1)
 (global-set-key (kbd "<f5>") 'revert-buffer)
 #+END_SRC
 * preload-local
-#+BEGIN_SRC
+#+BEGIN_SRC emacs-lisp
 ;; line number configuration
 (global-linum-mode t)  ;show line number
 
@@ -112,7 +112,7 @@ LOAD-DURATION is the time taken in milliseconds to load FEATURE.")
 (defalias 'yes-or-no-p 'y-or-n-p)
 #+END_SRC
 * elpa
-#+BEGIN_SRC
+#+BEGIN_SRC emacs-lisp
 (require 'package)
 
 ;;; Install into separate package dirs for each Emacs version, to prevent bytecode incompatibility
@@ -197,7 +197,7 @@ locate PACKAGE."
 (add-hook 'package-menu-mode-hook 'sanityinc/maybe-widen-package-menu-columns)
 #+END_SRC
 * themes
-#+BEGIN_SRC
+#+BEGIN_SRC emacs-lisp
 ;; (require-package 'color-theme-sanityinc-solarized)
 ;; (require-package 'color-theme-sanityinc-tomorrow)
 
@@ -274,7 +274,7 @@ locate PACKAGE."
 
 #+END_SRC
 * recentf
-#+BEGIN_SRC
+#+BEGIN_SRC emacs-lisp
 (add-hook 'after-init-hook 'recentf-mode)
 (setq-default
  recentf-max-saved-items 1000
@@ -283,7 +283,7 @@ locate PACKAGE."
 
 #+END_SRC
 * uniquify
-#+BEGIN_SRC
+#+BEGIN_SRC emacs-lisp
 ;;----------------------------------------------------------------------------
 ;; Nicer naming of buffers for files with identical names
 ;;----------------------------------------------------------------------------
@@ -295,7 +295,7 @@ locate PACKAGE."
 (setq uniquify-ignore-buffers-re "^\\*")
 #+END_SRC
 * utils
-#+BEGIN_SRC
+#+BEGIN_SRC emacs-lisp
 (if (fboundp 'with-eval-after-load)
     (defalias 'after-load 'with-eval-after-load)
   (defmacro after-load (feature &rest body)
@@ -447,7 +447,7 @@ align with comment chars."
 
 #+END_SRC
 * editing-utils
-#+BEGIN_SRC
+#+BEGIN_SRC emacs-lisp
 (require-package 'unfill)
 
 (when (fboundp 'electric-pair-mode)
@@ -783,7 +783,7 @@ With arg N, insert N newlines."
 
 #+END_SRC
 * multiple cursors
-#+BEGIN_SRC
+#+BEGIN_SRC emacs-lisp
 (require 'multiple-cursors)
 
 ;; add cursors to selection of lines
@@ -796,7 +796,7 @@ With arg N, insert N newlines."
 (global-set-key (kbd "C-c C-<") 'mc/mark-all-like-this)
 #+END_SRC
 * company
-#+BEGIN_SRC
+#+BEGIN_SRC emacs-lisp
 ;; TODO Default sort order should place [a-z] before punctuation
 
 (setq tab-always-indent 'complete)  ;; use 't when company is disabled
@@ -846,7 +846,7 @@ With arg N, insert N newlines."
     (add-hook 'company-completion-cancelled-hook 'sanityinc/page-break-lines-maybe-reenable)))
 #+END_SRC
 * org
-#+BEGIN_SRC
+#+BEGIN_SRC emacs-lisp
 ;; change bullets
 (require 'org-bullets)
 (add-hook 'org-mode-hook (lambda () (org-bullets-mode 1)))
@@ -919,7 +919,7 @@ With arg N, insert N newlines."
               ("PROJECT" :inherit font-lock-string-face))))
 #+END_SRC
 * auctex
-#+BEGIN_SRC
+#+BEGIN_SRC emacs-lisp
 ;;;; some AUCTeX tweaks from and other
 ;;;; https://www.emacswiki.org/emacs/AUCTeX
 ;; set pdflatex as auctex compile command
@@ -947,7 +947,7 @@ With arg N, insert N newlines."
 (add-hook 'LaTeX-mode-hook '(lambda () (local-set-key (kbd "C-c e") 'TeX-error-overview)))
 #+END_SRC
 * yasnippet
-#+BEGIN_SRC
+#+BEGIN_SRC emacs-lisp
 ;;;yasnippet
 (require-package 'yasnippet)
 (require 'yasnippet)
@@ -959,7 +959,7 @@ With arg N, insert N newlines."
 ;;(require-package 'yasnippet-snippets)
 #+END_SRC
 * flycheck
-#+BEGIN_SRC
+#+BEGIN_SRC emacs-lisp
 (when (maybe-require-package 'flycheck)
   (add-hook 'after-init-hook 'global-flycheck-mode)
   (setq flycheck-display-errors-function #'flycheck-display-error-messages-unless-error-list)
@@ -968,13 +968,13 @@ With arg N, insert N newlines."
     (add-hook 'flycheck-mode-hook 'flycheck-color-mode-line-mode)))
 #+END_SRC
 * neotree
-#+BEGIN_SRC
+#+BEGIN_SRC emacs-lisp
 (require-package 'neotree)
 (global-set-key [f8] 'neotree-toggle)
 (global-set-key [f9] 'neotree-dir)
 #+END_SRC
 * python-mode
-#+BEGIN_SRC
+#+BEGIN_SRC emacs-lisp
 ;;; Basic python mode configuration
 ;; (setq auto-mode-alist
 ;;       (append '(("SConstruct\\'" . python-mode)
@@ -1042,7 +1042,7 @@ With arg N, insert N newlines."
 
 #+END_SRC
 * whitespace
-#+BEGIN_SRC
+#+BEGIN_SRC emacs-lisp
 (setq-default show-trailing-whitespace t)
 
 ;;; Whitespace
@@ -1069,7 +1069,7 @@ With arg N, insert N newlines."
 (global-set-key [remap just-one-space] 'cycle-spacing)
 #+END_SRC
 * code
-#+BEGIN_SRC
+#+BEGIN_SRC emacs-lisp
 (require-package 'code-library)
 
 (setq code-library-directory "~/Dropbox/OrgNotes/CodeLibrary/")
@@ -1080,7 +1080,7 @@ With arg N, insert N newlines."
         (latex-mode . "tex.org")))
 #+END_SRC
 * projectile
-#+BEGIN_SRC
+#+BEGIN_SRC emacs-lisp
 (when (maybe-require-package 'projectile)
   (add-hook 'after-init-hook 'projectile-mode)
 
@@ -1101,7 +1101,7 @@ With arg N, insert N newlines."
   )
 #+END_SRC
 * ibuffer
-#+BEGIN_SRC
+#+BEGIN_SRC emacs-lisp
 ;; TODO: enhance ibuffer-fontification-alist
 ;;   See http://www.reddit.com/r/emacs/comments/21fjpn/fontifying_buffer_list_for_emacs_243/
 
@@ -1163,7 +1163,7 @@ With arg N, insert N newlines."
 
 #+END_SRC
 * markdown
-#+BEGIN_SRC
+#+BEGIN_SRC emacs-lisp
 (when (maybe-require-package 'markdown-mode)
   (add-auto-mode 'markdown-mode "\\.md\\.html\\'")
   (after-load 'whitespace-cleanup-mode
@@ -1172,7 +1172,7 @@ With arg N, insert N newlines."
 
 #+END_SRC
 * smex
-#+BEGIN_SRC
+#+BEGIN_SRC emacs-lisp
 ;; Use smex to handle M-x
 (when (maybe-require-package 'smex)
   ;; Change path for ~/.smex-items
@@ -1193,7 +1193,7 @@ With arg N, insert N newlines."
 
 #+END_SRC
 * fci
-#+BEGIN_SRC
+#+BEGIN_SRC emacs-lisp
 ;; Fill column indicator
 (require-package 'fill-column-indicator)
 (defun sanityinc/prog-mode-fci-settings ()
@@ -1250,7 +1250,7 @@ With arg N, insert N newlines."
 
 #+END_SRC
 * vc
-#+BEGIN_SRC
+#+BEGIN_SRC emacs-lisp
 (when (maybe-require-package 'diff-hl)
   (add-hook 'magit-post-refresh-hook 'diff-hl-magit-post-refresh)
   (add-hook 'after-init-hook 'global-diff-hl-mode)
@@ -1264,7 +1264,7 @@ With arg N, insert N newlines."
 
 #+END_SRC
 * git
-#+BEGIN_SRC
+#+BEGIN_SRC emacs-lisp
 ;; TODO: link commits from vc-log to magit-show-commit
 ;; TODO: smerge-mode
 (require-package 'git-blamed)
@@ -1352,7 +1352,7 @@ With arg N, insert N newlines."
 
 #+END_SRC
 * github
-#+BEGIN_SRC
+#+BEGIN_SRC emacs-lisp
 (require 'init-git)
 
 (maybe-require-package 'gist)
@@ -1366,7 +1366,7 @@ With arg N, insert N newlines."
 
 #+END_SRC
 * csv
-#+BEGIN_SRC
+#+BEGIN_SRC emacs-lisp
 (require-package 'csv-mode)
 
 (add-auto-mode 'csv-mode "\\.[Cc][Ss][Vv]\\'")
@@ -1387,7 +1387,7 @@ with open('collected.org', 'w') as fl:
              with open(join(directory, ifl), 'r') as init_fl:
                  lines = init_fl.readlines()
                  fl.write(''.join([ifl.replace('init-', '* ').replace('.el', ''), '\n']))
-                 fl.write('#+BEGIN_SRC\n')
+                 fl.write('#+BEGIN_SRC emacs-lisp\n')
                  for line in lines:
                      if not line.startswith('(provide'):
                          fl.write(line)
