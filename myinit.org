@@ -7,183 +7,54 @@ to read the orgfile as a myinit.el file! (which is created by org-babel..)
 (tool-bar-mode -1)
 (global-set-key (kbd "<f5>") 'revert-buffer)
 #+END_SRC
-* github
-#+BEGIN_SRC(require 'init-git)
+* preload-local
+#+BEGIN_SRC
+;; line number configuration
+(global-linum-mode t)  ;show line number
 
-(maybe-require-package 'gist)
-(require-package 'github-browse-file)
-(require-package 'bug-reference-github)
-(add-hook 'prog-mode-hook 'bug-reference-prog-mode)
+;; disable line number display for some modes
+(setq linum-disabled-modes-list '(eshell-mode shell-mode term-mode org-mode text-mode inferior-python-mode TeX-output-mode compilation-mode comint-mode blog-admin-mode gnus-group-mode gnus-article-mode bbdb-mode))
+(defun linum-on ()
+  (unless (or (minibufferp)
+			  (member major-mode linum-disabled-modes-list))
+	(linum-mode 1)))
 
-(maybe-require-package 'github-clone)
-(maybe-require-package 'magithub)
+;;;cursor stop blinking
+;; (blink-cursor-mode -1)
+;; (transient-mark-mode 1)
 
+;; ;;;highlight the current row
+;; (require 'hl-line)
+;; (global-hl-line-mode t)
 
-#+END_SRC
-* csv
-#+BEGIN_SRC(require-package 'csv-mode)
+;; change backup file directory
+(setq backup-directory-alist `(("." . "~/.emacs_backups")))
 
-(add-auto-mode 'csv-mode "\\.[Cc][Ss][Vv]\\'")
+;; stop creating those #auto-save# files
+(setq auto-save-default nil)
 
-(setq csv-separators '("," ";" "|" " "))
+;; make typing delete/overwrites selected text
+(delete-selection-mode 1)
 
-#+END_SRC
-* recentf
-#+BEGIN_SRC(add-hook 'after-init-hook 'recentf-mode)
-(setq-default
- recentf-max-saved-items 1000
- recentf-exclude '("/tmp/" "/ssh:"))
+;; auto insert closing bracket
+(electric-pair-mode 1)
 
+;; turn on bracket match highlight
+(show-paren-mode 1)
 
-#+END_SRC
-* fci
-#+BEGIN_SRC;; Fill column indicator
-(require-package 'fill-column-indicator)
-(defun sanityinc/prog-mode-fci-settings ()
-  (turn-on-fci-mode)
-  (when show-trailing-whitespace
-    (set (make-local-variable 'whitespace-style) '(face trailing))
-    (whitespace-mode 1)))
-
-(add-hook 'c++-mode-hook 'sanityinc/prog-mode-fci-settings)
-(add-hook 'c-mode-hook 'sanityinc/prog-mode-fci-settings)
-(add-hook 'python-mode-hook 'sanityinc/prog-mode-fci-settings)
-
-(defun sanityinc/fci-enabled-p ()
-  (bound-and-true-p fci-mode))
-
-(defvar sanityinc/fci-mode-suppressed nil)
-(make-variable-buffer-local 'sanityinc/fci-mode-suppressed)
-
-(defadvice popup-create (before suppress-fci-mode activate)
-  "Suspend fci-mode while popups are visible"
-  (let ((fci-enabled (sanityinc/fci-enabled-p)))
-    (when fci-enabled
-      (setq sanityinc/fci-mode-suppressed fci-enabled)
-      (turn-off-fci-mode))))
-(defadvice popup-delete (after restore-fci-mode activate)
-  "Restore fci-mode when all popups have closed"
-  (when (and sanityinc/fci-mode-suppressed
-             (null popup-instances))
-    (setq sanityinc/fci-mode-suppressed nil)
-    (turn-on-fci-mode)))
-
-;; Regenerate fci-mode line images after switching themes
-(defadvice enable-theme (after recompute-fci-face activate)
-  (dolist (buffer (buffer-list))
-    (with-current-buffer buffer
-      (when (sanityinc/fci-enabled-p)
-        (turn-on-fci-mode)))))
-
-;; Fix misalignment for company completion with fci-mode on
-(defvar-local company-fci-mode-on-p nil)
-
-(defun company-turn-off-fci (&rest ignore)
-  (when (boundp 'fci-mode)
-    (setq company-fci-mode-on-p fci-mode)
-    (when fci-mode (fci-mode -1))))
-
-(defun company-maybe-turn-on-fci (&rest ignore)
-  (when company-fci-mode-on-p (fci-mode 1)))
-
-(add-hook 'company-completion-started-hook 'company-turn-off-fci)
-(add-hook 'company-completion-finished-hook 'company-maybe-turn-on-fci)
-(add-hook 'company-completion-cancelled-hook 'company-maybe-turn-on-fci)
-
-
-#+END_SRC
-* uniquify
-#+BEGIN_SRC;;----------------------------------------------------------------------------
-;; Nicer naming of buffers for files with identical names
-;;----------------------------------------------------------------------------
-(require 'uniquify)
-
-(setq uniquify-buffer-name-style 'reverse)
-(setq uniquify-separator " • ")
-(setq uniquify-after-kill-buffer-p t)
-(setq uniquify-ignore-buffers-re "^\\*")
-
-
-#+END_SRC
-* neotree
-#+BEGIN_SRC(require-package 'neotree)
-(global-set-key [f8] 'neotree-toggle)
-(global-set-key [f9] 'neotree-dir)
-
-#+END_SRC
-* ibuffer
-#+BEGIN_SRC;; TODO: enhance ibuffer-fontification-alist
-;;   See http://www.reddit.com/r/emacs/comments/21fjpn/fontifying_buffer_list_for_emacs_243/
-
-(require-package 'fullframe)
-(after-load 'ibuffer
- (fullframe ibuffer ibuffer-quit))
-
-(require-package 'ibuffer-vc)
-
-(defun ibuffer-set-up-preferred-filters ()
-  (ibuffer-vc-set-filter-groups-by-vc-root)
-  (unless (eq ibuffer-sorting-mode 'filename/process)
-    (ibuffer-do-sort-by-filename/process)))
-
-(add-hook 'ibuffer-hook 'ibuffer-set-up-preferred-filters)
-
-(setq-default ibuffer-show-empty-filter-groups nil)
-
-
-(after-load 'ibuffer
-  ;; Use human readable Size column instead of original one
-  (define-ibuffer-column size-h
-    (:name "Size" :inline t)
-    (cond
-     ((> (buffer-size) 1000000) (format "%7.1fM" (/ (buffer-size) 1000000.0)))
-     ((> (buffer-size) 1000) (format "%7.1fk" (/ (buffer-size) 1000.0)))
-     (t (format "%8d" (buffer-size))))))
-
-
-;; Explicitly require ibuffer-vc to get its column definitions, which
-;; can't be autoloaded
-(after-load 'ibuffer
-  (require 'ibuffer-vc))
-
-;; Modify the default ibuffer-formats (toggle with `)
-(setq ibuffer-formats
-      '((mark modified read-only vc-status-mini " "
-              (name 18 18 :left :elide)
-              " "
-              (size-h 9 -1 :right)
-              " "
-              (mode 16 16 :left :elide)
-              " "
-              filename-and-process)
-        (mark modified read-only vc-status-mini " "
-              (name 18 18 :left :elide)
-              " "
-              (size-h 9 -1 :right)
-              " "
-              (mode 16 16 :left :elide)
-              " "
-              (vc-status 16 16 :left)
-              " "
-              filename-and-process)))
-
-(setq ibuffer-filter-group-name-face 'font-lock-doc-face)
-
-(global-set-key (kbd "C-x C-b") 'ibuffer)
-
+;; accept y/n for yes/no
+(defalias 'yes-or-no-p 'y-or-n-p)
 #+END_SRC
 * elpa
-#+BEGIN_SRC(require 'package)
+#+BEGIN_SRC
+(require 'package)
 
-
 ;;; Install into separate package dirs for each Emacs version, to prevent bytecode incompatibility
 (let ((versioned-package-dir
        (expand-file-name (format "elpa-%s.%s" emacs-major-version emacs-minor-version)
                          user-emacs-directory)))
   (setq package-user-dir versioned-package-dir))
 
-
-
 ;;; Standard package repositories
 
 (let* ((no-ssl (and (memq system-type '(windows-nt ms-dos))
@@ -204,9 +75,7 @@ to read the orgfile as a myinit.el file! (which is created by org-babel..)
 (add-to-list 'package-archives '("org" . "http://orgmode.org/elpa/"))
 
 
-
 ;;; On-demand installation of packages
-
 (defun require-package (package &optional min-version no-refresh)
   "Install given PACKAGE, optionally requiring MIN-VERSION.
 If NO-REFRESH is non-nil, the available package lists will not be
@@ -235,18 +104,13 @@ locate PACKAGE."
      (message "Couldn't install optional package `%s': %S" package err)
      nil)))
 
-
 ;;; Fire up package.el
-
 (setq package-enable-at-startup nil)
 (package-initialize)
 
-
-
 (require-package 'fullframe)
 (fullframe list-packages quit-window)
 
-
 (require-package 'cl-lib)
 (require 'cl-lib)
 
@@ -265,137 +129,10 @@ locate PACKAGE."
       (sanityinc/set-tabulated-list-column-width "Archive" longest-archive-name))))
 
 (add-hook 'package-menu-mode-hook 'sanityinc/maybe-widen-package-menu-columns)
-
-
-#+END_SRC
-* yasnippet
-#+BEGIN_SRC;;;yasnippet
-(require-package 'yasnippet)
-(require 'yasnippet)
-(define-key yas-minor-mode-map (kbd "<tab>") nil)
-(define-key yas-minor-mode-map (kbd "TAB") nil)
-(define-key yas-minor-mode-map (kbd "C-c k") 'yas-expand)
-(yas-global-mode t)
-
-;;(require-package 'yasnippet-snippets)
-
-#+END_SRC
-* smex
-#+BEGIN_SRC;; Use smex to handle M-x
-(when (maybe-require-package 'smex)
-  ;; Change path for ~/.smex-items
-  (setq-default smex-save-file (expand-file-name ".smex-items" user-emacs-directory))
-  (global-set-key [remap execute-extended-command] 'smex))
-
-
-;; type hyphen instead of space when pressing space
-;; found at: https://www.emacswiki.org/emacs/Smex
-;; (defadvice smex (around space-inserts-hyphen activate compile)
-;;         (let ((ido-cannot-complete-command 
-;;                `(lambda ()
-;;                   (interactive)
-;;                   (if (string= " " (this-command-keys))
-;;                       (insert ?-)
-;;                     (funcall ,ido-cannot-complete-command)))))
-;;           ad-do-it))
-
-#+END_SRC
-* flycheck
-#+BEGIN_SRC(when (maybe-require-package 'flycheck)
-  (add-hook 'after-init-hook 'global-flycheck-mode)
-  (setq flycheck-display-errors-function #'flycheck-display-error-messages-unless-error-list)
-
-  (when (maybe-require-package 'flycheck-color-mode-line)
-    (add-hook 'flycheck-mode-hook 'flycheck-color-mode-line-mode)))
-
-
-#+END_SRC
-* org
-#+BEGIN_SRC;; change bullets
-(require 'org-bullets)
-(add-hook 'org-mode-hook (lambda () (org-bullets-mode 1)))
-;; org mode with flyspell-mode
-(add-hook 'org-mode-hook 'flyspell-mode)
-;; org mode with auto-fill-mode
-(add-hook 'org-mode-hook 'auto-fill-mode)
-;; custom config for org-latex-export-to-pdf
-(setq org-latex-packages-alist
-      '((""     "color"     t)
-        "\\tolerance=1000"
-        "\\definecolor{color1}{rgb}{0.1,0.0,0.7}"
-        "\\hypersetup{pdfauthor={Steve Simmert},colorlinks,linkcolor=color1, urlcolor=color1, breaklinks}"))
-;; Customize Heading font size
-(custom-set-faces
- '(org-level-1 ((t (:inherit outline-1 :height 1.2))))
- '(org-level-2 ((t (:inherit outline-2 :height 1.15))))
- '(org-level-3 ((t (:inherit outline-3 :height 1.1))))
- '(org-level-4 ((t (:inherit outline-4 :height 1.05))))
- '(org-level-5 ((t (:inherit outline-5 :height 1.0))))
- )
-
-;; display of entities as UTF-8 characters
-(setq org-pretty-entities t)
-
-;; (define-key global-map (kbd "C-c l") 'org-store-link)
-;; (define-key global-map (kbd "C-c a") 'org-agenda)
-
-(setq org-startup-indented t)
-
-;; Various preferences
-(setq org-log-done t
-      org-edit-timestamp-down-means-later t
-      org-archive-mark-done nil
-      org-hide-emphasis-markers t
-      org-catch-invisible-edits 'show
-      org-export-coding-system 'utf-8
-      org-fast-tag-selection-single-key 'expert
-      org-html-validation-link nil
-      org-export-kill-product-buffer-when-displayed t
-      org-tags-column 80
-      org-export-backends (quote (ascii html icalendar latex md))
-      org-startup-align-all-tables t)
-
-(setq org-support-shift-select t)
-
-
-;;; To-do settings
-
-(setq org-todo-keywords
-      (quote ((sequence "TODO(t)" "NEXT(n)" "|" "DONE(d!/!)")
-              (sequence "PROJECT(p)" "|" "DONE(d!/!)" "CANCELLED(c@/!)")
-              (sequence "WAITING(w@/!)" "DELEGATED(e!)" "HOLD(h)" "|" "CANCELLED(c@/!)")))
-      org-todo-repeat-to-state "NEXT")
-
-(setq org-todo-keyword-faces
-      (quote (("NEXT" :inherit warning)
-              ("PROJECT" :inherit font-lock-string-face))))
-
-
-#+END_SRC
-* projectile
-#+BEGIN_SRC(when (maybe-require-package 'projectile)
-  (add-hook 'after-init-hook 'projectile-mode)
-
-  ;; Shorter modeline
-  (after-load 'projectile
-    (setq-default
-     projectile-mode-line
-     '(:eval
-       (if (file-remote-p default-directory)
-           " Proj"
-         (format " Proj[%s]" (projectile-project-name))))))
-
-  (setq projectile-keymap-prefix (kbd "C-c p"))
-
-  ;;Configuration for Windows
-  (when *is-a-windows*
-    (setq projectile-indexing-method 'alien))
-  )
-
-
 #+END_SRC
 * themes
-#+BEGIN_SRC;; (require-package 'color-theme-sanityinc-solarized)
+#+BEGIN_SRC
+;; (require-package 'color-theme-sanityinc-solarized)
 ;; (require-package 'color-theme-sanityinc-tomorrow)
 
 ;; ;; If you don't customize it, this is the theme you get.
@@ -431,7 +168,7 @@ locate PACKAGE."
 ;;   (reapply-themes))
 
 (when (maybe-require-package 'dimmer)
-  (setq-default dimmer-fraction 0.3)
+  (setq-default dimmer-fraction 0.2)
   (add-hook 'after-init-hook 'dimmer-mode))
 
 
@@ -470,8 +207,182 @@ locate PACKAGE."
  )
 
 #+END_SRC
+* recentf
+#+BEGIN_SRC
+(add-hook 'after-init-hook 'recentf-mode)
+(setq-default
+ recentf-max-saved-items 1000
+ recentf-exclude '("/tmp/" "/ssh:"))
+
+
+#+END_SRC
+* uniquify
+#+BEGIN_SRC
+;;----------------------------------------------------------------------------
+;; Nicer naming of buffers for files with identical names
+;;----------------------------------------------------------------------------
+(require 'uniquify)
+
+(setq uniquify-buffer-name-style 'reverse)
+(setq uniquify-separator " • ")
+(setq uniquify-after-kill-buffer-p t)
+(setq uniquify-ignore-buffers-re "^\\*")
+#+END_SRC
+* utils
+#+BEGIN_SRC
+(if (fboundp 'with-eval-after-load)
+    (defalias 'after-load 'with-eval-after-load)
+  (defmacro after-load (feature &rest body)
+    "After FEATURE is loaded, evaluate BODY."
+    (declare (indent defun))
+    `(eval-after-load ,feature
+       '(progn ,@body))))
+
+
+;;----------------------------------------------------------------------------
+;; Handier way to add modes to auto-mode-alist
+;;----------------------------------------------------------------------------
+(defun add-auto-mode (mode &rest patterns)
+  "Add entries to `auto-mode-alist' to use `MODE' for all given file `PATTERNS'."
+  (dolist (pattern patterns)
+    (add-to-list 'auto-mode-alist (cons pattern mode))))
+
+
+;;----------------------------------------------------------------------------
+;; String utilities missing from core emacs
+;;----------------------------------------------------------------------------
+(defun sanityinc/string-all-matches (regex str &optional group)
+  "Find all matches for `REGEX' within `STR', returning the full match string or group `GROUP'."
+  (let ((result nil)
+        (pos 0)
+        (group (or group 0)))
+    (while (string-match regex str pos)
+      (push (match-string group str) result)
+      (setq pos (match-end group)))
+    result))
+
+
+;;----------------------------------------------------------------------------
+;; Delete the current file
+;;----------------------------------------------------------------------------
+(defun delete-this-file ()
+  "Delete the current file, and kill the buffer."
+  (interactive)
+  (unless (buffer-file-name)
+    (error "No file is currently being edited"))
+  (when (yes-or-no-p (format "Really delete '%s'?"
+                             (file-name-nondirectory buffer-file-name)))
+    (delete-file (buffer-file-name))
+    (kill-this-buffer)))
+
+
+;;----------------------------------------------------------------------------
+;; Rename the current file
+;;----------------------------------------------------------------------------
+(defun rename-this-file-and-buffer (new-name)
+  "Renames both current buffer and file it's visiting to NEW-NAME."
+  (interactive "sNew name: ")
+  (let ((name (buffer-name))
+        (filename (buffer-file-name)))
+    (unless filename
+      (error "Buffer '%s' is not visiting a file!" name))
+    (progn
+      (when (file-exists-p filename)
+        (rename-file filename new-name 1))
+      (set-visited-file-name new-name)
+      (rename-buffer new-name))))
+
+;;----------------------------------------------------------------------------
+;; Browse current HTML file
+;;----------------------------------------------------------------------------
+(defun browse-current-file ()
+  "Open the current file as a URL using `browse-url'."
+  (interactive)
+  (let ((file-name (buffer-file-name)))
+    (if (and (fboundp 'tramp-tramp-file-p)
+             (tramp-tramp-file-p file-name))
+        (error "Cannot open tramp file")
+      (browse-url (concat "file://" file-name)))))
+
+
+;; implement unfill --> is now done via unfill package loaded in init-editing-utils.el
+;; (defun xah-fill-or-unfill ()
+;;   "Reformat current paragraph or region to `fill-column', like `fill-paragraph' or “unfill”.
+;; When there is a text selection, act on the selection, else, act
+;; on a text block separated by blank lines.  URL
+;; `http://ergoemacs.org/emacs/modernization_fill-paragraph.html'
+;; Version 2017-01-08"
+;;   (interactive)
+;;   ;; This command symbol has a property “'compact-p”, the possible
+;;   ;; values are t and nil. This property is used to easily determine
+;;   ;; whether to compact or uncompact, when this command is called
+;;   ;; again
+;;   (let ( ($compact-p
+;;           (if (eq last-command this-command)
+;;               (get this-command 'compact-p)
+;;             (> (- (line-end-position) (line-beginning-position)) fill-column)))
+;;          (deactivate-mark nil)
+;;          ($blanks-regex "\n[ \t]*\n")
+;;          $p1 $p2
+;;          )
+;;     (if (use-region-p)
+;;         (progn (setq $p1 (region-beginning))
+;;                (setq $p2 (region-end)))
+;;       (save-excursion
+;;         (if (re-search-backward $blanks-regex nil "NOERROR")
+;;             (progn (re-search-forward $blanks-regex)
+;;                    (setq $p1 (point)))
+;;           (setq $p1 (point)))
+;;         (if (re-search-forward $blanks-regex nil "NOERROR")
+;;             (progn (re-search-backward $blanks-regex)
+;;                    (setq $p2 (point)))
+;;           (setq $p2 (point)))))
+;;     (if $compact-p
+;;         (fill-region $p1 $p2)
+;;       (let ((fill-column most-positive-fixnum ))
+;;         (fill-region $p1 $p2)))
+;;     (put this-command 'compact-p (not $compact-p))))
+;; ;; setup key binding for xah fill unfill
+;; (global-set-key (kbd "M-Q") 'xah-fill-or-unfill)
+
+;; comment out as a heading
+(defun comment-fill-aligned (arg)
+  "Comment out the current line using fill-column to pad and
+align with comment chars."
+  (interactive "p")
+  (comment-normalize-vars)
+  (let* ((comment-style 'aligned)
+        (beg (line-beginning-position))
+        (end (line-end-position))
+        (com-add (/ (- fill-column (+ (- end beg) 2)) 2)))
+    (comment-region beg end (+ comment-add com-add))
+    )
+  (end-of-line)
+  (if (> (current-column) (+ fill-column 1))
+      (delete-backward-char 1)
+    ()
+   )
+  (newline)
+  )
+(global-set-key (kbd "C-x C") 'comment-fill-aligned)
+;; kill the other window buffer
+(defun other-window-kill-buffer ()
+  "Kill the buffer in the other window"
+  (interactive)
+  ;; Window selection is used because point goes to a different window
+  ;; if more than 2 windows are present
+  (let ((win-curr (selected-window))
+        (win-other (next-window)))
+    (select-window win-other)
+    (kill-this-buffer)
+    (select-window win-curr)))
+(global-set-key (kbd "C-x K") 'other-window-kill-buffer)
+
+
+#+END_SRC
 * editing-utils
-#+BEGIN_SRC(require-package 'unfill)
+#+BEGIN_SRC
+(require-package 'unfill)
 
 (when (fboundp 'electric-pair-mode)
   (add-hook 'after-init-hook 'electric-pair-mode))
@@ -805,159 +716,145 @@ With arg N, insert N newlines."
 
 
 #+END_SRC
-* utils
-#+BEGIN_SRC(if (fboundp 'with-eval-after-load)
-    (defalias 'after-load 'with-eval-after-load)
-  (defmacro after-load (feature &rest body)
-    "After FEATURE is loaded, evaluate BODY."
-    (declare (indent defun))
-    `(eval-after-load ,feature
-       '(progn ,@body))))
+* multiple cursors
+#+BEGIN_SRC
+(require 'multiple-cursors)
 
+;; add cursors to selection of lines
+(global-set-key (kbd "C-S-c C-S-c") 'mc/edit-lines)
 
-;;----------------------------------------------------------------------------
-;; Handier way to add modes to auto-mode-alist
-;;----------------------------------------------------------------------------
-(defun add-auto-mode (mode &rest patterns)
-  "Add entries to `auto-mode-alist' to use `MODE' for all given file `PATTERNS'."
-  (dolist (pattern patterns)
-    (add-to-list 'auto-mode-alist (cons pattern mode))))
+;; add cursors to same keywords
+;; firast mark the word then add cursors
+(global-set-key (kbd "C->") 'mc/mark-next-like-this)
+(global-set-key (kbd "C-<") 'mc/mark-previous-like-this)
+(global-set-key (kbd "C-c C-<") 'mc/mark-all-like-this)
+#+END_SRC
+* company
+#+BEGIN_SRC
+;; TODO Default sort order should place [a-z] before punctuation
 
+(setq tab-always-indent 'complete)  ;; use 't when company is disabled
+(add-to-list 'completion-styles 'initials t)
 
-;;----------------------------------------------------------------------------
-;; String utilities missing from core emacs
-;;----------------------------------------------------------------------------
-(defun sanityinc/string-all-matches (regex str &optional group)
-  "Find all matches for `REGEX' within `STR', returning the full match string or group `GROUP'."
-  (let ((result nil)
-        (pos 0)
-        (group (or group 0)))
-    (while (string-match regex str pos)
-      (push (match-string group str) result)
-      (setq pos (match-end group)))
-    result))
+(when (maybe-require-package 'company)
+  (add-hook 'after-init-hook 'global-company-mode)
+  (after-load 'company
+    (diminish 'company-mode "CMP")
+    (define-key company-mode-map (kbd "M-/") 'company-complete)
+    (define-key company-active-map (kbd "M-/") 'company-other-backend)
+    (setq-default company-dabbrev-other-buffers 'all
+                  company-tooltip-align-annotations t)
+	;; use numbers 0-9 to select company completion candidates
+	;; (setq company-show-numbers t)
+	;; (let ((map company-active-map))
+	;;   (mapc (lambda (x) (define-key map (format "%d" x)
+	;; 				 `(lambda () (interactive) (company-complete-number ,x))))
+	;; 		(number-sequence 0 9)))
+	)
+  (global-set-key (kbd "M-C-/") 'company-complete)
+  (when (maybe-require-package 'company-quickhelp)
+    (add-hook 'after-init-hook 'company-quickhelp-mode))
 
+  (defun sanityinc/local-push-company-backend (backend)
+    "Add BACKEND to a buffer-local version of `company-backends'."
+    (make-local-variable 'company-backends)
+    (push backend company-backends)))
 
-;;----------------------------------------------------------------------------
-;; Delete the current file
-;;----------------------------------------------------------------------------
-(defun delete-this-file ()
-  "Delete the current file, and kill the buffer."
-  (interactive)
-  (unless (buffer-file-name)
-    (error "No file is currently being edited"))
-  (when (yes-or-no-p (format "Really delete '%s'?"
-                             (file-name-nondirectory buffer-file-name)))
-    (delete-file (buffer-file-name))
-    (kill-this-buffer)))
+;; Suspend page-break-lines-mode while company menu is active
+;; (see https://github.com/company-mode/company-mode/issues/416)
+(after-load 'company
+  (after-load 'page-break-lines
+    (defvar sanityinc/page-break-lines-on-p nil)
+    (make-variable-buffer-local 'sanityinc/page-break-lines-on-p)
 
+    (defun sanityinc/page-break-lines-disable (&rest ignore)
+      (when (setq sanityinc/page-break-lines-on-p (bound-and-true-p page-break-lines-mode))
+        (page-break-lines-mode -1)))
 
-;;----------------------------------------------------------------------------
-;; Rename the current file
-;;----------------------------------------------------------------------------
-(defun rename-this-file-and-buffer (new-name)
-  "Renames both current buffer and file it's visiting to NEW-NAME."
-  (interactive "sNew name: ")
-  (let ((name (buffer-name))
-        (filename (buffer-file-name)))
-    (unless filename
-      (error "Buffer '%s' is not visiting a file!" name))
-    (progn
-      (when (file-exists-p filename)
-        (rename-file filename new-name 1))
-      (set-visited-file-name new-name)
-      (rename-buffer new-name))))
+    (defun sanityinc/page-break-lines-maybe-reenable (&rest ignore)
+      (when sanityinc/page-break-lines-on-p
+        (page-break-lines-mode 1)))
 
-;;----------------------------------------------------------------------------
-;; Browse current HTML file
-;;----------------------------------------------------------------------------
-(defun browse-current-file ()
-  "Open the current file as a URL using `browse-url'."
-  (interactive)
-  (let ((file-name (buffer-file-name)))
-    (if (and (fboundp 'tramp-tramp-file-p)
-             (tramp-tramp-file-p file-name))
-        (error "Cannot open tramp file")
-      (browse-url (concat "file://" file-name)))))
+    (add-hook 'company-completion-started-hook 'sanityinc/page-break-lines-disable)
+    (add-hook 'company-completion-finished-hook 'sanityinc/page-break-lines-maybe-reenable)
+    (add-hook 'company-completion-cancelled-hook 'sanityinc/page-break-lines-maybe-reenable)))
+#+END_SRC
+* org
+#+BEGIN_SRC
+;; change bullets
+(require 'org-bullets)
+(add-hook 'org-mode-hook (lambda () (org-bullets-mode 1)))
+;; org mode with flyspell-mode
+(add-hook 'org-mode-hook 'flyspell-mode)
+;; org mode with auto-fill-mode
+(add-hook 'org-mode-hook 'auto-fill-mode)
+;; custom config for org-latex-export-to-pdf
+(setq org-latex-packages-alist
+      '((""     "color"     t)
+        "\\tolerance=1000"
+        "\\definecolor{color1}{rgb}{0.1,0.0,0.7}"
+        "\\hypersetup{pdfauthor={Steve Simmert},colorlinks,linkcolor=color1, urlcolor=color1, breaklinks}"))
+;; Customize Heading font size
+(custom-set-faces
+ '(org-level-1 ((t (:inherit outline-1 :height 1.2))))
+ '(org-level-2 ((t (:inherit outline-2 :height 1.15))))
+ '(org-level-3 ((t (:inherit outline-3 :height 1.1))))
+ '(org-level-4 ((t (:inherit outline-4 :height 1.05))))
+ '(org-level-5 ((t (:inherit outline-5 :height 1.0))))
+ )
 
+;; display of entities as UTF-8 characters
+(setq org-pretty-entities t)
 
-;; implement unfill --> is now done via unfill package loaded in init-editing-utils.el
-;; (defun xah-fill-or-unfill ()
-;;   "Reformat current paragraph or region to `fill-column', like `fill-paragraph' or “unfill”.
-;; When there is a text selection, act on the selection, else, act
-;; on a text block separated by blank lines.  URL
-;; `http://ergoemacs.org/emacs/modernization_fill-paragraph.html'
-;; Version 2017-01-08"
-;;   (interactive)
-;;   ;; This command symbol has a property “'compact-p”, the possible
-;;   ;; values are t and nil. This property is used to easily determine
-;;   ;; whether to compact or uncompact, when this command is called
-;;   ;; again
-;;   (let ( ($compact-p
-;;           (if (eq last-command this-command)
-;;               (get this-command 'compact-p)
-;;             (> (- (line-end-position) (line-beginning-position)) fill-column)))
-;;          (deactivate-mark nil)
-;;          ($blanks-regex "\n[ \t]*\n")
-;;          $p1 $p2
-;;          )
-;;     (if (use-region-p)
-;;         (progn (setq $p1 (region-beginning))
-;;                (setq $p2 (region-end)))
-;;       (save-excursion
-;;         (if (re-search-backward $blanks-regex nil "NOERROR")
-;;             (progn (re-search-forward $blanks-regex)
-;;                    (setq $p1 (point)))
-;;           (setq $p1 (point)))
-;;         (if (re-search-forward $blanks-regex nil "NOERROR")
-;;             (progn (re-search-backward $blanks-regex)
-;;                    (setq $p2 (point)))
-;;           (setq $p2 (point)))))
-;;     (if $compact-p
-;;         (fill-region $p1 $p2)
-;;       (let ((fill-column most-positive-fixnum ))
-;;         (fill-region $p1 $p2)))
-;;     (put this-command 'compact-p (not $compact-p))))
-;; ;; setup key binding for xah fill unfill
-;; (global-set-key (kbd "M-Q") 'xah-fill-or-unfill)
+;; (define-key global-map (kbd "C-c l") 'org-store-link)
+;; (define-key global-map (kbd "C-c a") 'org-agenda)
 
-;; comment out as a heading
-(defun comment-fill-aligned (arg)
-  "Comment out the current line using fill-column to pad and
-align with comment chars."
-  (interactive "p")
-  (comment-normalize-vars)
-  (let* ((comment-style 'aligned)
-        (beg (line-beginning-position))
-        (end (line-end-position))
-        (com-add (/ (- fill-column (+ (- end beg) 2)) 2)))
-    (comment-region beg end (+ comment-add com-add))
-    )
-  (end-of-line)
-  (if (> (current-column) (+ fill-column 1))
-      (delete-backward-char 1)
-    ()
-   )
-  (newline)
-  )
-(global-set-key (kbd "C-x C") 'comment-fill-aligned)
-;; kill the other window buffer
-(defun other-window-kill-buffer ()
-  "Kill the buffer in the other window"
-  (interactive)
-  ;; Window selection is used because point goes to a different window
-  ;; if more than 2 windows are present
-  (let ((win-curr (selected-window))
-        (win-other (next-window)))
-    (select-window win-other)
-    (kill-this-buffer)
-    (select-window win-curr)))
-(global-set-key (kbd "C-x K") 'other-window-kill-buffer)
+(setq org-startup-indented t)
 
+;; Various preferences
+(setq org-log-done t
+      org-edit-timestamp-down-means-later t
+      org-archive-mark-done nil
+      org-hide-emphasis-markers t
+      org-catch-invisible-edits 'show
+      org-export-coding-system 'utf-8
+      org-fast-tag-selection-single-key 'expert
+      org-html-validation-link nil
+      org-export-kill-product-buffer-when-displayed t
+      org-tags-column 80
+      org-export-backends (quote (ascii html icalendar latex md))
+      org-startup-align-all-tables t)
 
+(setq org-support-shift-select t)
+
+
+;;; To-do settings
+;; configuration:
+;; (key) -shortcut for C-c C-t key
+;; (!) - make a time stamp when keyword is used
+;; (@) - ask for a note
+;; (/!) - also make timestamp when exiting the keyword
+(setq org-todo-keywords
+      (quote ((sequence "TODO(t)" "NEXT(n)" "|" "DONE(d!)")
+              (sequence "PROJECT(p)" "|" "DONE(d!)" "CANCELLED(c@!)")
+              (sequence "WAITING(w@/!)" "DELEGATED(e!@)" "HOLD(h)" "|" "DONE(d!)" "CANCELLED(c@!)")))
+      ;;org-todo-repeat-to-state "NEXT"
+      )
+;; can be set by:
+;; (setq org-todo-keyword-faces
+;;       '(
+;;         ("NOT-TODO" . (:foreground "blue" :weight bold))
+;;         ("IF-TIME" . (:foreground "yellow" :weight bold))
+;;         ("NOT-REPRO" . (:foreground "purple" :weight bold))
+;;         ))
+
+(setq org-todo-keyword-faces
+      (quote (("NEXT" :inherit warning)
+              ("PROJECT" :inherit font-lock-string-face))))
 #+END_SRC
 * auctex
-#+BEGIN_SRC;;;; some AUCTeX tweaks from and other
+#+BEGIN_SRC
+;;;; some AUCTeX tweaks from and other
 ;;;; https://www.emacswiki.org/emacs/AUCTeX
 ;; set pdflatex as auctex compile command
 (setq TeX-PDF-mode t)
@@ -982,14 +879,107 @@ align with comment chars."
       )
 ;; new key binding to show errors
 (add-hook 'LaTeX-mode-hook '(lambda () (local-set-key (kbd "C-c e") 'TeX-error-overview)))
+#+END_SRC
+* yasnippet
+#+BEGIN_SRC
+;;;yasnippet
+(require-package 'yasnippet)
+(require 'yasnippet)
+(define-key yas-minor-mode-map (kbd "<tab>") nil)
+(define-key yas-minor-mode-map (kbd "TAB") nil)
+(define-key yas-minor-mode-map (kbd "C-c k") 'yas-expand)
+(yas-global-mode t)
+
+;;(require-package 'yasnippet-snippets)
+#+END_SRC
+* flycheck
+#+BEGIN_SRC
+(when (maybe-require-package 'flycheck)
+  (add-hook 'after-init-hook 'global-flycheck-mode)
+  (setq flycheck-display-errors-function #'flycheck-display-error-messages-unless-error-list)
+
+  (when (maybe-require-package 'flycheck-color-mode-line)
+    (add-hook 'flycheck-mode-hook 'flycheck-color-mode-line-mode)))
+#+END_SRC
+* neotree
+#+BEGIN_SRC
+(require-package 'neotree)
+(global-set-key [f8] 'neotree-toggle)
+(global-set-key [f9] 'neotree-dir)
+#+END_SRC
+* python-mode
+#+BEGIN_SRC
+;;; Basic python mode configuration
+;; (setq auto-mode-alist
+;;       (append '(("SConstruct\\'" . python-mode)
+;; 				("SConscript\\'" . python-mode))
+;;               auto-mode-alist))
+
+(require-package 'pip-requirements)
+
+
+;;; iPython configuration
+(setq
+ python-shell-interpreter "ipython3"
+ python-shell-interpreter-args "-i"
+ ;; python-shell-completion-native-enable nil
+ ;; python-shell-prompt-regexp "In \\[[0-9]+\\]: "
+ ;; python-shell-prompt-output-regexp "Out\\[[0-9]+\\]: "
+ ;; python-shell-completion-setup-code
+ ;; "from IPython.core.completerlib import module_completion"
+ ;; python-shell-completion-module-string-code
+ ;; "';'.join(module_completion('''%s'''))\n"
+ ;; python-shell-completion-string-code
+ ;; "';'.join(get_ipython().Completer.all_completions('''%s'''))\n"
+ )
+
+;;; python style checking
+;; (require-package 'pep8)
+;; (require-package 'pylint)
+
+;; integrate autopep8
+(require-package 'py-autopep8)
+(add-hook 'python-mode-hook 'py-autopep8-enable-on-save)
+
+
+;;; pymacs and ropemacs configuration
+;; (require-package 'pymacs)
+
+;; (eval-after-load 'python
+;;   '(progn
+;; 	 (autoload 'pymacs-apply "pymacs")
+;; 	 (autoload 'pymacs-call "pymacs")
+;; 	 (autoload 'pymacs-eval "pymacs" nil t)
+;; 	 (autoload 'pymacs-exec "pymacs" nil t)
+;; 	 (autoload 'pymacs-load "pymacs" nil t)
+;; 	 (message "loading ropemacs")
+;; 	 (pymacs-load "ropemacs" "rope-")
+;; 	 (setq ropemacs-enable-autoimport t)))
+
+;;; jedi configuration
+(require-package 'company-jedi)
+(defun company-jedi-setup ()
+  "Configure company-backends for company-jedi and company-yasnippet."
+  (push '(company-jedi :with company-yasnippet) company-backends)
+  ;; (add-to-list 'company-backends 'company-jedi)
+  )
+(add-hook 'python-mode-hook 'company-jedi-setup)
+
+(setq jedi:setup-keys t)
+(setq jedi:complete-on-dot t)
+(add-hook 'python-mode-hook 'jedi:setup)
+
+(setq jedi-custom-file (expand-file-name "jedi-custom.el" user-emacs-directory))
+(when (file-exists-p jedi-custom-file)
+  (load jedi-custom-file))
+
 
 #+END_SRC
 * whitespace
-#+BEGIN_SRC(setq-default show-trailing-whitespace t)
+#+BEGIN_SRC
+(setq-default show-trailing-whitespace t)
 
-
 ;;; Whitespace
-
 (defun sanityinc/no-trailing-whitespace ()
   "Turn off display of trailing whitespace in this buffer."
   (setq show-trailing-whitespace nil))
@@ -1005,31 +995,119 @@ align with comment chars."
                 minibuffer-setup-hook))
   (add-hook hook #'sanityinc/no-trailing-whitespace))
 
-
 (require-package 'whitespace-cleanup-mode)
 (add-hook 'after-init-hook 'global-whitespace-cleanup-mode)
 (after-load 'whitespace-cleanup-mode
   (diminish 'whitespace-cleanup-mode))
 
 (global-set-key [remap just-one-space] 'cycle-spacing)
+#+END_SRC
+* code
+#+BEGIN_SRC
+(require-package 'code-library)
 
+(setq code-library-directory "~/Dropbox/OrgNotes/CodeLibrary/")
+(setq code-library-mode-file-alist
+      '((c-mode . "c_cpp.org")
+        (c++-mode . "c_cpp.org")
+        (python-mode . "python.org")
+        (latex-mode . "tex.org")))
+#+END_SRC
+* projectile
+#+BEGIN_SRC
+(when (maybe-require-package 'projectile)
+  (add-hook 'after-init-hook 'projectile-mode)
+
+  ;; Shorter modeline
+  (after-load 'projectile
+    (setq-default
+     projectile-mode-line
+     '(:eval
+       (if (file-remote-p default-directory)
+           " Proj"
+         (format " Proj[%s]" (projectile-project-name))))))
+
+  (setq projectile-keymap-prefix (kbd "C-c p"))
+
+  ;;Configuration for Windows
+  (when *is-a-windows*
+    (setq projectile-indexing-method 'alien))
+  )
+#+END_SRC
+* ibuffer
+#+BEGIN_SRC
+;; TODO: enhance ibuffer-fontification-alist
+;;   See http://www.reddit.com/r/emacs/comments/21fjpn/fontifying_buffer_list_for_emacs_243/
+
+(require-package 'fullframe)
+(after-load 'ibuffer
+ (fullframe ibuffer ibuffer-quit))
+
+(require-package 'ibuffer-vc)
+
+(defun ibuffer-set-up-preferred-filters ()
+  (ibuffer-vc-set-filter-groups-by-vc-root)
+  (unless (eq ibuffer-sorting-mode 'filename/process)
+    (ibuffer-do-sort-by-filename/process)))
+
+(add-hook 'ibuffer-hook 'ibuffer-set-up-preferred-filters)
+
+(setq-default ibuffer-show-empty-filter-groups nil)
+
+
+(after-load 'ibuffer
+  ;; Use human readable Size column instead of original one
+  (define-ibuffer-column size-h
+    (:name "Size" :inline t)
+    (cond
+     ((> (buffer-size) 1000000) (format "%7.1fM" (/ (buffer-size) 1000000.0)))
+     ((> (buffer-size) 1000) (format "%7.1fk" (/ (buffer-size) 1000.0)))
+     (t (format "%8d" (buffer-size))))))
+
+
+;; Explicitly require ibuffer-vc to get its column definitions, which
+;; can't be autoloaded
+(after-load 'ibuffer
+  (require 'ibuffer-vc))
+
+;; Modify the default ibuffer-formats (toggle with `)
+(setq ibuffer-formats
+      '((mark modified read-only vc-status-mini " "
+              (name 18 18 :left :elide)
+              " "
+              (size-h 9 -1 :right)
+              " "
+              (mode 16 16 :left :elide)
+              " "
+              filename-and-process)
+        (mark modified read-only vc-status-mini " "
+              (name 18 18 :left :elide)
+              " "
+              (size-h 9 -1 :right)
+              " "
+              (mode 16 16 :left :elide)
+              " "
+              (vc-status 16 16 :left)
+              " "
+              filename-and-process)))
+
+(setq ibuffer-filter-group-name-face 'font-lock-doc-face)
+
+(global-set-key (kbd "C-x C-b") 'ibuffer)
 
 #+END_SRC
-* vc
-#+BEGIN_SRC(when (maybe-require-package 'diff-hl)
-  (add-hook 'magit-post-refresh-hook 'diff-hl-magit-post-refresh)
-  (add-hook 'after-init-hook 'global-diff-hl-mode)
+* markdown
+#+BEGIN_SRC
+(when (maybe-require-package 'markdown-mode)
+  (add-auto-mode 'markdown-mode "\\.md\\.html\\'")
+  (after-load 'whitespace-cleanup-mode
+    (push 'markdown-mode whitespace-cleanup-mode-ignore-modes)))
 
-  (after-load 'diff-hl
-    (define-key diff-hl-mode-map
-      (kbd "<left-fringe> <mouse-1>")
-      'diff-hl-diff-goto-hunk)))
-
-(maybe-require-package 'browse-at-remote)
 
 #+END_SRC
 * benchmarking
-#+BEGIN_SRC(defun sanityinc/time-subtract-millis (b a)
+#+BEGIN_SRC
+(defun sanityinc/time-subtract-millis (b a)
   (* 1000.0 (float-time (time-subtract b a))))
 
 
@@ -1099,8 +1177,101 @@ LOAD-DURATION is the time taken in milliseconds to load FEATURE.")
 
 
 #+END_SRC
+* smex
+#+BEGIN_SRC
+;; Use smex to handle M-x
+(when (maybe-require-package 'smex)
+  ;; Change path for ~/.smex-items
+  (setq-default smex-save-file (expand-file-name ".smex-items" user-emacs-directory))
+  (global-set-key [remap execute-extended-command] 'smex))
+
+
+;; type hyphen instead of space when pressing space
+;; found at: https://www.emacswiki.org/emacs/Smex
+;; (defadvice smex (around space-inserts-hyphen activate compile)
+;;         (let ((ido-cannot-complete-command 
+;;                `(lambda ()
+;;                   (interactive)
+;;                   (if (string= " " (this-command-keys))
+;;                       (insert ?-)
+;;                     (funcall ,ido-cannot-complete-command)))))
+;;           ad-do-it))
+
+#+END_SRC
+* fci
+#+BEGIN_SRC
+;; Fill column indicator
+(require-package 'fill-column-indicator)
+(defun sanityinc/prog-mode-fci-settings ()
+  (turn-on-fci-mode)
+  (when show-trailing-whitespace
+    (set (make-local-variable 'whitespace-style) '(face trailing))
+    (whitespace-mode 1)))
+
+(add-hook 'c++-mode-hook 'sanityinc/prog-mode-fci-settings)
+(add-hook 'c-mode-hook 'sanityinc/prog-mode-fci-settings)
+(add-hook 'python-mode-hook 'sanityinc/prog-mode-fci-settings)
+
+(defun sanityinc/fci-enabled-p ()
+  (bound-and-true-p fci-mode))
+
+(defvar sanityinc/fci-mode-suppressed nil)
+(make-variable-buffer-local 'sanityinc/fci-mode-suppressed)
+
+(defadvice popup-create (before suppress-fci-mode activate)
+  "Suspend fci-mode while popups are visible"
+  (let ((fci-enabled (sanityinc/fci-enabled-p)))
+    (when fci-enabled
+      (setq sanityinc/fci-mode-suppressed fci-enabled)
+      (turn-off-fci-mode))))
+(defadvice popup-delete (after restore-fci-mode activate)
+  "Restore fci-mode when all popups have closed"
+  (when (and sanityinc/fci-mode-suppressed
+             (null popup-instances))
+    (setq sanityinc/fci-mode-suppressed nil)
+    (turn-on-fci-mode)))
+
+;; Regenerate fci-mode line images after switching themes
+(defadvice enable-theme (after recompute-fci-face activate)
+  (dolist (buffer (buffer-list))
+    (with-current-buffer buffer
+      (when (sanityinc/fci-enabled-p)
+        (turn-on-fci-mode)))))
+
+;; Fix misalignment for company completion with fci-mode on
+(defvar-local company-fci-mode-on-p nil)
+
+(defun company-turn-off-fci (&rest ignore)
+  (when (boundp 'fci-mode)
+    (setq company-fci-mode-on-p fci-mode)
+    (when fci-mode (fci-mode -1))))
+
+(defun company-maybe-turn-on-fci (&rest ignore)
+  (when company-fci-mode-on-p (fci-mode 1)))
+
+(add-hook 'company-completion-started-hook 'company-turn-off-fci)
+(add-hook 'company-completion-finished-hook 'company-maybe-turn-on-fci)
+(add-hook 'company-completion-cancelled-hook 'company-maybe-turn-on-fci)
+
+
+#+END_SRC
+* vc
+#+BEGIN_SRC
+(when (maybe-require-package 'diff-hl)
+  (add-hook 'magit-post-refresh-hook 'diff-hl-magit-post-refresh)
+  (add-hook 'after-init-hook 'global-diff-hl-mode)
+
+  (after-load 'diff-hl
+    (define-key diff-hl-mode-map
+      (kbd "<left-fringe> <mouse-1>")
+      'diff-hl-diff-goto-hunk)))
+
+(maybe-require-package 'browse-at-remote)
+
+#+END_SRC
 * git
-#+BEGIN_SRC;; TODO: link commits from vc-log to magit-show-commit
+#+BEGIN_SRC
+;; TODO: link commits from vc-log to magit-show-commit
 ;; TODO: smerge-mode
 (require-package 'git-blamed)
 (require-package 'gitignore-mode)
@@ -1186,183 +1357,43 @@ LOAD-DURATION is the time taken in milliseconds to load FEATURE.")
 
 
 #+END_SRC
-* code
-#+BEGIN_SRC(require-package 'code-library)
+* github
+#+BEGIN_SRC
+(require 'init-git)
 
-(setq code-library-directory "~/Dropbox/OrgNotes/CodeLibrary/")
-(setq code-library-mode-file-alist
-      '((c-mode . "c_cpp.org")
-        (c++-mode . "c_cpp.org")
-        (python-mode . "python.org")
-        (latex-mode . "tex.org")))
+(maybe-require-package 'gist)
+(require-package 'github-browse-file)
+(require-package 'bug-reference-github)
+(add-hook 'prog-mode-hook 'bug-reference-prog-mode)
 
-#+END_SRC
-* markdown
-#+BEGIN_SRC(when (maybe-require-package 'markdown-mode)
-  (add-auto-mode 'markdown-mode "\\.md\\.html\\'")
-  (after-load 'whitespace-cleanup-mode
-    (push 'markdown-mode whitespace-cleanup-mode-ignore-modes)))
+(maybe-require-package 'github-clone)
+(maybe-require-package 'magithub)
 
 
 #+END_SRC
-* preload-local
-#+BEGIN_SRC;; line number configuration
-(global-linum-mode t);show line number
-;; disable line number display for some modes
-(setq linum-disabled-modes-list '(eshell-mode shell-mode term-mode org-mode text-mode inferior-python-mode TeX-output-mode compilation-mode comint-mode blog-admin-mode gnus-group-mode gnus-article-mode bbdb-mode))
-(defun linum-on ()
-  (unless (or (minibufferp)
-			  (member major-mode linum-disabled-modes-list))
-	(linum-mode 1)))
+* csv
+#+BEGIN_SRC
+(require-package 'csv-mode)
 
-;;;cursor stop blinking
-;; (blink-cursor-mode -1)
-;; (transient-mark-mode 1)
+(add-auto-mode 'csv-mode "\\.[Cc][Ss][Vv]\\'")
 
-;; ;;;highlight the current row
-;; (require 'hl-line)
-;; (global-hl-line-mode t)
-
-;; change backup file directory
-(setq backup-directory-alist `(("." . "~/.emacs_backups")))
-;; stop creating those #auto-save# files
-(setq auto-save-default nil)
-;; make typing delete/overwrites selected text
-(delete-selection-mode 1)
-;; auto insert closing bracket
-(electric-pair-mode 1)
-;; turn on bracket match highlight
-(show-paren-mode 1)
-;; accept y/n for yes/no
-(defalias 'yes-or-no-p 'y-or-n-p)
-
-#+END_SRC
-* python-mode
-#+BEGIN_SRC;;; Basic python mode configuration
-;; (setq auto-mode-alist
-;;       (append '(("SConstruct\\'" . python-mode)
-;; 				("SConscript\\'" . python-mode))
-;;               auto-mode-alist))
-
-(require-package 'pip-requirements)
-
-
-;;; iPython configuration
-(setq
- python-shell-interpreter "ipython3"
- python-shell-interpreter-args "-i"
- ;; python-shell-completion-native-enable nil
- ;; python-shell-prompt-regexp "In \\[[0-9]+\\]: "
- ;; python-shell-prompt-output-regexp "Out\\[[0-9]+\\]: "
- ;; python-shell-completion-setup-code
- ;; "from IPython.core.completerlib import module_completion"
- ;; python-shell-completion-module-string-code
- ;; "';'.join(module_completion('''%s'''))\n"
- ;; python-shell-completion-string-code
- ;; "';'.join(get_ipython().Completer.all_completions('''%s'''))\n"
- )
-
-;;; python style checking
-;; (require-package 'pep8)
-;; (require-package 'pylint)
-
-;; integrate autopep8
-(require-package 'py-autopep8)
-(add-hook 'python-mode-hook 'py-autopep8-enable-on-save)
-
-
-;;; pymacs and ropemacs configuration
-;; (require-package 'pymacs)
-
-;; (eval-after-load 'python
-;;   '(progn
-;; 	 (autoload 'pymacs-apply "pymacs")
-;; 	 (autoload 'pymacs-call "pymacs")
-;; 	 (autoload 'pymacs-eval "pymacs" nil t)
-;; 	 (autoload 'pymacs-exec "pymacs" nil t)
-;; 	 (autoload 'pymacs-load "pymacs" nil t)
-;; 	 (message "loading ropemacs")
-;; 	 (pymacs-load "ropemacs" "rope-")
-;; 	 (setq ropemacs-enable-autoimport t)))
-
-;;; jedi configuration
-(require-package 'company-jedi)
-(defun company-jedi-setup ()
-  "Configure company-backends for company-jedi and company-yasnippet."
-  (push '(company-jedi :with company-yasnippet) company-backends)
-  ;; (add-to-list 'company-backends 'company-jedi)
-  )
-(add-hook 'python-mode-hook 'company-jedi-setup)
-
-(setq jedi:setup-keys t)
-(setq jedi:complete-on-dot t)
-(add-hook 'python-mode-hook 'jedi:setup)
-
-(setq jedi-custom-file (expand-file-name "jedi-custom.el" user-emacs-directory))
-(when (file-exists-p jedi-custom-file)
-  (load jedi-custom-file))
-
-
-#+END_SRC
-* company
-#+BEGIN_SRC;; TODO Default sort order should place [a-z] before punctuation
-
-(setq tab-always-indent 'complete)  ;; use 't when company is disabled
-(add-to-list 'completion-styles 'initials t)
-
-(when (maybe-require-package 'company)
-  (add-hook 'after-init-hook 'global-company-mode)
-  (after-load 'company
-    (diminish 'company-mode "CMP")
-    (define-key company-mode-map (kbd "M-/") 'company-complete)
-    (define-key company-active-map (kbd "M-/") 'company-other-backend)
-    (setq-default company-dabbrev-other-buffers 'all
-                  company-tooltip-align-annotations t)
-	;; use numbers 0-9 to select company completion candidates
-	;; (setq company-show-numbers t)
-	;; (let ((map company-active-map))
-	;;   (mapc (lambda (x) (define-key map (format "%d" x)
-	;; 				 `(lambda () (interactive) (company-complete-number ,x))))
-	;; 		(number-sequence 0 9)))
-	)
-  (global-set-key (kbd "M-C-/") 'company-complete)
-  (when (maybe-require-package 'company-quickhelp)
-    (add-hook 'after-init-hook 'company-quickhelp-mode))
-
-  (defun sanityinc/local-push-company-backend (backend)
-    "Add BACKEND to a buffer-local version of `company-backends'."
-    (make-local-variable 'company-backends)
-    (push backend company-backends)))
-
-;; Suspend page-break-lines-mode while company menu is active
-;; (see https://github.com/company-mode/company-mode/issues/416)
-(after-load 'company
-  (after-load 'page-break-lines
-    (defvar sanityinc/page-break-lines-on-p nil)
-    (make-variable-buffer-local 'sanityinc/page-break-lines-on-p)
-
-    (defun sanityinc/page-break-lines-disable (&rest ignore)
-      (when (setq sanityinc/page-break-lines-on-p (bound-and-true-p page-break-lines-mode))
-        (page-break-lines-mode -1)))
-
-    (defun sanityinc/page-break-lines-maybe-reenable (&rest ignore)
-      (when sanityinc/page-break-lines-on-p
-        (page-break-lines-mode 1)))
-
-    (add-hook 'company-completion-started-hook 'sanityinc/page-break-lines-disable)
-    (add-hook 'company-completion-finished-hook 'sanityinc/page-break-lines-maybe-reenable)
-    (add-hook 'company-completion-cancelled-hook 'sanityinc/page-break-lines-maybe-reenable)))
-
-
+(setq csv-separators '("," ";" "|" " "))
 
 #+END_SRC
 * conversion python code
+from os import listdir
+from os.path import join
+
+directory = './lisp/'
+
+onlyfiles = [fl for fl in listdir(dr) if fl.endswith('.el')]
+
 with open('collected.org', 'w') as fl:
          for ifl in onlyfiles:
              with open(join(directory, ifl), 'r') as init_fl:
                  lines = init_fl.readlines()
                  fl.write(''.join([ifl.replace('init-', '* ').replace('.el', ''), '\n']))
-                 fl.write('#+BEGIN_SRC')
+                 fl.write('#+BEGIN_SRC\n')
                  for line in lines:
                      if not line.startswith('(provide'):
                          fl.write(line)
