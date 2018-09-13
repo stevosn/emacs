@@ -1096,8 +1096,8 @@ With arg N, insert N newlines."
   (setq projectile-keymap-prefix (kbd "C-c p"))
 
   ;;Configuration for Windows
-  (when *is-a-windows*
-    (setq projectile-indexing-method 'alien))
+  ;; (when *is-a-windows*
+  ;;   (setq projectile-indexing-method 'alien))
   )
 #+END_SRC
 * ibuffer
@@ -1272,8 +1272,8 @@ With arg N, insert N newlines."
 (require-package 'gitconfig-mode)
 (maybe-require-package 'git-timemachine)
 
-(when *is-a-windows*
-  (setenv "GIT_ASKPASS" "git-gui--askpass"))  ;; Configure GIT_ASKPASS environment variable to tell git to use a gui prompt for the user name and the password
+;; (when *is-a-windows*
+;;  (setenv "GIT_ASKPASS" "git-gui--askpass"))  ;; Configure GIT_ASKPASS environment variable to tell git to use a gui prompt for the user name and the password
 
 (when (maybe-require-package 'magit)
   (setq-default magit-diff-refine-hunk t)
@@ -1295,10 +1295,9 @@ With arg N, insert N newlines."
 (when (maybe-require-package 'git-commit)
   (add-hook 'git-commit-mode-hook 'goto-address-mode))
 
-
-(when *is-a-mac*
-  (after-load 'magit
-    (add-hook 'magit-mode-hook (lambda () (local-unset-key [(meta h)])))))
+;; (when *is-a-mac*
+;;   (after-load 'magit
+;;     (add-hook 'magit-mode-hook (lambda () (local-unset-key [(meta h)])))))
 
 
 
