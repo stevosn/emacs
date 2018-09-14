@@ -234,7 +234,7 @@ locate PACKAGE."
 ;;   (reapply-themes))
 
 (when (maybe-require-package 'dimmer)
-  (setq-default dimmer-fraction 0.2)
+  (setq-default dimmer-fraction 0.1)
   (add-hook 'after-init-hook 'dimmer-mode))
 
 
@@ -271,7 +271,6 @@ locate PACKAGE."
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
  )
-
 #+END_SRC
 * recentf
 #+BEGIN_SRC emacs-lisp
@@ -279,8 +278,6 @@ locate PACKAGE."
 (setq-default
  recentf-max-saved-items 1000
  recentf-exclude '("/tmp/" "/ssh:"))
-
-
 #+END_SRC
 * uniquify
 #+BEGIN_SRC emacs-lisp
@@ -304,7 +301,6 @@ locate PACKAGE."
     `(eval-after-load ,feature
        '(progn ,@body))))
 
-
 ;;----------------------------------------------------------------------------
 ;; Handier way to add modes to auto-mode-alist
 ;;----------------------------------------------------------------------------
@@ -312,7 +308,6 @@ locate PACKAGE."
   "Add entries to `auto-mode-alist' to use `MODE' for all given file `PATTERNS'."
   (dolist (pattern patterns)
     (add-to-list 'auto-mode-alist (cons pattern mode))))
-
 
 ;;----------------------------------------------------------------------------
 ;; String utilities missing from core emacs
@@ -327,7 +322,6 @@ locate PACKAGE."
       (setq pos (match-end group)))
     result))
 
-
 ;;----------------------------------------------------------------------------
 ;; Delete the current file
 ;;----------------------------------------------------------------------------
@@ -340,7 +334,6 @@ locate PACKAGE."
                              (file-name-nondirectory buffer-file-name)))
     (delete-file (buffer-file-name))
     (kill-this-buffer)))
-
 
 ;;----------------------------------------------------------------------------
 ;; Rename the current file
@@ -369,7 +362,6 @@ locate PACKAGE."
              (tramp-tramp-file-p file-name))
         (error "Cannot open tramp file")
       (browse-url (concat "file://" file-name)))))
-
 
 ;; implement unfill --> is now done via unfill package loaded in init-editing-utils.el
 ;; (defun xah-fill-or-unfill ()
@@ -542,8 +534,8 @@ align with comment chars."
 
 
 
-(when (fboundp 'global-prettify-symbols-mode)
-  (add-hook 'after-init-hook 'global-prettify-symbols-mode))
+;; (when (fboundp 'global-prettify-symbols-mode)
+;;  (add-hook 'after-init-hook 'global-prettify-symbols-mode))
 
 
 (require-package 'undo-tree)
@@ -609,7 +601,7 @@ align with comment chars."
 ;;----------------------------------------------------------------------------
 ;; Rectangle selections, and overwrite text when the selection is active
 ;;----------------------------------------------------------------------------
-(cua-selection-mode t)                  ; for rectangles, CUA is nice
+;;(cua-selection-mode t)                  ; for rectangles, CUA is nice
 
 
 ;;----------------------------------------------------------------------------
@@ -782,6 +774,34 @@ With arg N, insert N newlines."
 
 
 #+END_SRC
+* auctex
+#+BEGIN_SRC emacs-lisp
+;;;; some AUCTeX tweaks from and other
+;;;; https://www.emacswiki.org/emacs/AUCTeX
+;; set pdflatex as auctex compile command
+(setq TeX-PDF-mode t)
+(add-hook 'LaTeX-mode-hook 'auto-fill-mode)
+(add-hook 'LaTeX-mode-hook 'flyspell-mode)
+(add-hook 'LaTeX-mode-hook 'LaTeX-math-mode)
+(add-hook 'LaTeX-mode-hook 'turn-on-reftex)
+(setq reftex-plug-into-AUCTeX t)
+;; enable outline-minor-mode for Auctex
+(defun turn-on-outline-minor-mode ()
+  (outline-minor-mode 1)
+  )
+(add-hook 'LaTeX-mode-hook 'turn-on-outline-minor-mode)
+(add-hook 'latex-mode-hook 'turn-on-outline-minor-mode)
+(setq outline-minor-mode-prefix "\C-c\C-o")
+(add-hook 'LaTeX-mode-hook
+          '(lambda ()
+            (define-key LaTeX-mode-map (kbd "$") 'self-insert-command)))
+;; add frame environment to outline minor mode
+(setq TeX-outline-extra
+      '(("\\\\begin{frame}[{\[].+" 5))
+      )
+;; new key binding to show errors
+(add-hook 'LaTeX-mode-hook '(lambda () (local-set-key (kbd "C-c e") 'TeX-error-overview)))
+#+END_SRC
 * multiple cursors
 #+BEGIN_SRC emacs-lisp
 (require 'multiple-cursors)
@@ -794,56 +814,6 @@ With arg N, insert N newlines."
 (global-set-key (kbd "C->") 'mc/mark-next-like-this)
 (global-set-key (kbd "C-<") 'mc/mark-previous-like-this)
 (global-set-key (kbd "C-c C-<") 'mc/mark-all-like-this)
-#+END_SRC
-* company
-#+BEGIN_SRC emacs-lisp
-;; TODO Default sort order should place [a-z] before punctuation
-
-(setq tab-always-indent 'complete)  ;; use 't when company is disabled
-(add-to-list 'completion-styles 'initials t)
-
-(when (maybe-require-package 'company)
-  (add-hook 'after-init-hook 'global-company-mode)
-  (after-load 'company
-    (diminish 'company-mode "CMP")
-    (define-key company-mode-map (kbd "M-/") 'company-complete)
-    (define-key company-active-map (kbd "M-/") 'company-other-backend)
-    (setq-default company-dabbrev-other-buffers 'all
-                  company-tooltip-align-annotations t)
-	;; use numbers 0-9 to select company completion candidates
-	;; (setq company-show-numbers t)
-	;; (let ((map company-active-map))
-	;;   (mapc (lambda (x) (define-key map (format "%d" x)
-	;; 				 `(lambda () (interactive) (company-complete-number ,x))))
-	;; 		(number-sequence 0 9)))
-	)
-  (global-set-key (kbd "M-C-/") 'company-complete)
-  (when (maybe-require-package 'company-quickhelp)
-    (add-hook 'after-init-hook 'company-quickhelp-mode))
-
-  (defun sanityinc/local-push-company-backend (backend)
-    "Add BACKEND to a buffer-local version of `company-backends'."
-    (make-local-variable 'company-backends)
-    (push backend company-backends)))
-
-;; Suspend page-break-lines-mode while company menu is active
-;; (see https://github.com/company-mode/company-mode/issues/416)
-(after-load 'company
-  (after-load 'page-break-lines
-    (defvar sanityinc/page-break-lines-on-p nil)
-    (make-variable-buffer-local 'sanityinc/page-break-lines-on-p)
-
-    (defun sanityinc/page-break-lines-disable (&rest ignore)
-      (when (setq sanityinc/page-break-lines-on-p (bound-and-true-p page-break-lines-mode))
-        (page-break-lines-mode -1)))
-
-    (defun sanityinc/page-break-lines-maybe-reenable (&rest ignore)
-      (when sanityinc/page-break-lines-on-p
-        (page-break-lines-mode 1)))
-
-    (add-hook 'company-completion-started-hook 'sanityinc/page-break-lines-disable)
-    (add-hook 'company-completion-finished-hook 'sanityinc/page-break-lines-maybe-reenable)
-    (add-hook 'company-completion-cancelled-hook 'sanityinc/page-break-lines-maybe-reenable)))
 #+END_SRC
 * org
 #+BEGIN_SRC emacs-lisp
@@ -918,33 +888,55 @@ With arg N, insert N newlines."
       (quote (("NEXT" :inherit warning)
               ("PROJECT" :inherit font-lock-string-face))))
 #+END_SRC
-* auctex
+* company
 #+BEGIN_SRC emacs-lisp
-;;;; some AUCTeX tweaks from and other
-;;;; https://www.emacswiki.org/emacs/AUCTeX
-;; set pdflatex as auctex compile command
-(setq TeX-PDF-mode t)
-(add-hook 'LaTeX-mode-hook 'auto-fill-mode)
-(add-hook 'LaTeX-mode-hook 'flyspell-mode)
-(add-hook 'LaTeX-mode-hook 'LaTeX-math-mode)
-(add-hook 'LaTeX-mode-hook 'turn-on-reftex)
-(setq reftex-plug-into-AUCTeX t)
-;; enable outline-minor-mode for Auctex
-(defun turn-on-outline-minor-mode ()
-  (outline-minor-mode 1)
-  )
-(add-hook 'LaTeX-mode-hook 'turn-on-outline-minor-mode)
-(add-hook 'latex-mode-hook 'turn-on-outline-minor-mode)
-(setq outline-minor-mode-prefix "\C-c\C-o")
-(add-hook 'LaTeX-mode-hook
-          '(lambda ()
-            (define-key LaTeX-mode-map (kbd "$") 'self-insert-command)))
-;; add frame environment to outline minor mode
-(setq TeX-outline-extra
-      '(("\\\\begin{frame}[{\[].+" 5))
-      )
-;; new key binding to show errors
-(add-hook 'LaTeX-mode-hook '(lambda () (local-set-key (kbd "C-c e") 'TeX-error-overview)))
+;; TODO Default sort order should place [a-z] before punctuation
+
+(setq tab-always-indent 'complete)  ;; use 't when company is disabled
+(add-to-list 'completion-styles 'initials t)
+
+(when (maybe-require-package 'company)
+  (add-hook 'after-init-hook 'global-company-mode)
+  (after-load 'company
+    (diminish 'company-mode "CMP")
+    (define-key company-mode-map (kbd "M-/") 'company-complete)
+    (define-key company-active-map (kbd "M-/") 'company-other-backend)
+    (setq-default company-dabbrev-other-buffers 'all
+                  company-tooltip-align-annotations t)
+	;; use numbers 0-9 to select company completion candidates
+	;; (setq company-show-numbers t)
+	;; (let ((map company-active-map))
+	;;   (mapc (lambda (x) (define-key map (format "%d" x)
+	;; 				 `(lambda () (interactive) (company-complete-number ,x))))
+	;; 		(number-sequence 0 9)))
+	)
+  (global-set-key (kbd "M-C-/") 'company-complete)
+  (when (maybe-require-package 'company-quickhelp)
+    (add-hook 'after-init-hook 'company-quickhelp-mode))
+
+  (defun sanityinc/local-push-company-backend (backend)
+    "Add BACKEND to a buffer-local version of `company-backends'."
+    (make-local-variable 'company-backends)
+    (push backend company-backends)))
+
+;; Suspend page-break-lines-mode while company menu is active
+;; (see https://github.com/company-mode/company-mode/issues/416)
+(after-load 'company
+  (after-load 'page-break-lines
+    (defvar sanityinc/page-break-lines-on-p nil)
+    (make-variable-buffer-local 'sanityinc/page-break-lines-on-p)
+
+    (defun sanityinc/page-break-lines-disable (&rest ignore)
+      (when (setq sanityinc/page-break-lines-on-p (bound-and-true-p page-break-lines-mode))
+        (page-break-lines-mode -1)))
+
+    (defun sanityinc/page-break-lines-maybe-reenable (&rest ignore)
+      (when sanityinc/page-break-lines-on-p
+        (page-break-lines-mode 1)))
+
+    (add-hook 'company-completion-started-hook 'sanityinc/page-break-lines-disable)
+    (add-hook 'company-completion-finished-hook 'sanityinc/page-break-lines-maybe-reenable)
+    (add-hook 'company-completion-cancelled-hook 'sanityinc/page-break-lines-maybe-reenable)))
 #+END_SRC
 * yasnippet
 #+BEGIN_SRC emacs-lisp
@@ -1168,8 +1160,6 @@ With arg N, insert N newlines."
   (add-auto-mode 'markdown-mode "\\.md\\.html\\'")
   (after-load 'whitespace-cleanup-mode
     (push 'markdown-mode whitespace-cleanup-mode-ignore-modes)))
-
-
 #+END_SRC
 * smex
 #+BEGIN_SRC emacs-lisp
@@ -1179,18 +1169,16 @@ With arg N, insert N newlines."
   (setq-default smex-save-file (expand-file-name ".smex-items" user-emacs-directory))
   (global-set-key [remap execute-extended-command] 'smex))
 
-
 ;; type hyphen instead of space when pressing space
 ;; found at: https://www.emacswiki.org/emacs/Smex
 ;; (defadvice smex (around space-inserts-hyphen activate compile)
-;;         (let ((ido-cannot-complete-command 
+;;         (let ((ido-cannot-complete-command
 ;;                `(lambda ()
 ;;                   (interactive)
 ;;                   (if (string= " " (this-command-keys))
 ;;                       (insert ?-)
 ;;                     (funcall ,ido-cannot-complete-command)))))
 ;;           ad-do-it))
-
 #+END_SRC
 * fci
 #+BEGIN_SRC emacs-lisp
