@@ -7,3 +7,4 @@ recentf
 session.*
 tramp*
 myinit.el
+projectile-*.eld
