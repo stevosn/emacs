@@ -140,7 +140,6 @@ LOAD-DURATION is the time taken in milliseconds to load FEATURE.")
 ;; use it.
 (add-to-list 'package-archives '("org" . "http://orgmode.org/elpa/"))
 
-
 ;;; On-demand installation of packages
 (defun require-package (package &optional min-version no-refresh)
   "Install given PACKAGE, optionally requiring MIN-VERSION.
@@ -441,6 +440,7 @@ align with comment chars."
 * editing-utils
 #+BEGIN_SRC emacs-lisp
 (require-package 'unfill)
+(require-package 'diminish)
 
 (when (fboundp 'electric-pair-mode)
   (add-hook 'after-init-hook 'electric-pair-mode))
@@ -776,6 +776,8 @@ With arg N, insert N newlines."
 #+END_SRC
 * auctex
 #+BEGIN_SRC emacs-lisp
+(require-package 'auctex)
+
 ;;;; some AUCTeX tweaks from and other
 ;;;; https://www.emacswiki.org/emacs/AUCTeX
 ;; set pdflatex as auctex compile command
@@ -814,283 +816,6 @@ With arg N, insert N newlines."
 (global-set-key (kbd "C->") 'mc/mark-next-like-this)
 (global-set-key (kbd "C-<") 'mc/mark-previous-like-this)
 (global-set-key (kbd "C-c C-<") 'mc/mark-all-like-this)
-#+END_SRC
-* org
-#+BEGIN_SRC emacs-lisp
-;; change bullets
-(require 'org-bullets)
-(add-hook 'org-mode-hook (lambda () (org-bullets-mode 1)))
-;; org mode with flyspell-mode
-(add-hook 'org-mode-hook 'flyspell-mode)
-;; org mode with auto-fill-mode
-(add-hook 'org-mode-hook 'auto-fill-mode)
-;; custom config for org-latex-export-to-pdf
-(setq org-latex-packages-alist
-      '((""     "color"     t)
-        "\\tolerance=1000"
-        "\\definecolor{color1}{rgb}{0.1,0.0,0.7}"
-        "\\hypersetup{pdfauthor={Steve Simmert},colorlinks,linkcolor=color1, urlcolor=color1, breaklinks}"))
-;; Customize Heading font size
-(custom-set-faces
- '(org-level-1 ((t (:inherit outline-1 :height 1.2))))
- '(org-level-2 ((t (:inherit outline-2 :height 1.15))))
- '(org-level-3 ((t (:inherit outline-3 :height 1.1))))
- '(org-level-4 ((t (:inherit outline-4 :height 1.05))))
- '(org-level-5 ((t (:inherit outline-5 :height 1.0))))
- )
-
-;; display of entities as UTF-8 characters
-(setq org-pretty-entities t)
-
-;; (define-key global-map (kbd "C-c l") 'org-store-link)
-;; (define-key global-map (kbd "C-c a") 'org-agenda)
-
-(setq org-startup-indented t)
-
-;; Various preferences
-(setq org-log-done t
-      org-edit-timestamp-down-means-later t
-      org-archive-mark-done nil
-      org-hide-emphasis-markers t
-      org-catch-invisible-edits 'show
-      org-export-coding-system 'utf-8
-      org-fast-tag-selection-single-key 'expert
-      org-html-validation-link nil
-      org-export-kill-product-buffer-when-displayed t
-      org-tags-column 80
-      org-export-backends (quote (ascii html icalendar latex md))
-      org-startup-align-all-tables t)
-
-(setq org-support-shift-select t)
-
-
-;;; To-do settings
-;; configuration:
-;; (key) -shortcut for C-c C-t key
-;; (!) - make a time stamp when keyword is used
-;; (@) - ask for a note
-;; (/!) - also make timestamp when exiting the keyword
-(setq org-todo-keywords
-      (quote ((sequence "TODO(t)" "NEXT(n)" "|" "DONE(d!)")
-              (sequence "PROJECT(p)" "|" "DONE(d!)" "CANCELLED(c@!)")
-              (sequence "WAITING(w@/!)" "DELEGATED(e!@)" "HOLD(h)" "|" "DONE(d!)" "CANCELLED(c@!)")))
-      ;;org-todo-repeat-to-state "NEXT"
-      )
-;; can be set by:
-;; (setq org-todo-keyword-faces
-;;       '(
-;;         ("NOT-TODO" . (:foreground "blue" :weight bold))
-;;         ("IF-TIME" . (:foreground "yellow" :weight bold))
-;;         ("NOT-REPRO" . (:foreground "purple" :weight bold))
-;;         ))
-
-(setq org-todo-keyword-faces
-      (quote (("NEXT" :inherit warning)
-              ("PROJECT" :inherit font-lock-string-face))))
-#+END_SRC
-* company
-#+BEGIN_SRC emacs-lisp
-;; TODO Default sort order should place [a-z] before punctuation
-
-(setq tab-always-indent 'complete)  ;; use 't when company is disabled
-(add-to-list 'completion-styles 'initials t)
-
-(when (maybe-require-package 'company)
-  (add-hook 'after-init-hook 'global-company-mode)
-  (after-load 'company
-    (diminish 'company-mode "CMP")
-    (define-key company-mode-map (kbd "M-/") 'company-complete)
-    (define-key company-active-map (kbd "M-/") 'company-other-backend)
-    (setq-default company-dabbrev-other-buffers 'all
-                  company-tooltip-align-annotations t)
-	;; use numbers 0-9 to select company completion candidates
-	;; (setq company-show-numbers t)
-	;; (let ((map company-active-map))
-	;;   (mapc (lambda (x) (define-key map (format "%d" x)
-	;; 				 `(lambda () (interactive) (company-complete-number ,x))))
-	;; 		(number-sequence 0 9)))
-	)
-  (global-set-key (kbd "M-C-/") 'company-complete)
-  (when (maybe-require-package 'company-quickhelp)
-    (add-hook 'after-init-hook 'company-quickhelp-mode))
-
-  (defun sanityinc/local-push-company-backend (backend)
-    "Add BACKEND to a buffer-local version of `company-backends'."
-    (make-local-variable 'company-backends)
-    (push backend company-backends)))
-
-;; Suspend page-break-lines-mode while company menu is active
-;; (see https://github.com/company-mode/company-mode/issues/416)
-(after-load 'company
-  (after-load 'page-break-lines
-    (defvar sanityinc/page-break-lines-on-p nil)
-    (make-variable-buffer-local 'sanityinc/page-break-lines-on-p)
-
-    (defun sanityinc/page-break-lines-disable (&rest ignore)
-      (when (setq sanityinc/page-break-lines-on-p (bound-and-true-p page-break-lines-mode))
-        (page-break-lines-mode -1)))
-
-    (defun sanityinc/page-break-lines-maybe-reenable (&rest ignore)
-      (when sanityinc/page-break-lines-on-p
-        (page-break-lines-mode 1)))
-
-    (add-hook 'company-completion-started-hook 'sanityinc/page-break-lines-disable)
-    (add-hook 'company-completion-finished-hook 'sanityinc/page-break-lines-maybe-reenable)
-    (add-hook 'company-completion-cancelled-hook 'sanityinc/page-break-lines-maybe-reenable)))
-#+END_SRC
-* yasnippet
-#+BEGIN_SRC emacs-lisp
-;;;yasnippet
-(require-package 'yasnippet)
-(require 'yasnippet)
-(define-key yas-minor-mode-map (kbd "<tab>") nil)
-(define-key yas-minor-mode-map (kbd "TAB") nil)
-(define-key yas-minor-mode-map (kbd "C-c k") 'yas-expand)
-(yas-global-mode t)
-
-;;(require-package 'yasnippet-snippets)
-#+END_SRC
-* flycheck
-#+BEGIN_SRC emacs-lisp
-(when (maybe-require-package 'flycheck)
-  (add-hook 'after-init-hook 'global-flycheck-mode)
-  (setq flycheck-display-errors-function #'flycheck-display-error-messages-unless-error-list)
-
-  (when (maybe-require-package 'flycheck-color-mode-line)
-    (add-hook 'flycheck-mode-hook 'flycheck-color-mode-line-mode)))
-#+END_SRC
-* neotree
-#+BEGIN_SRC emacs-lisp
-(require-package 'neotree)
-(global-set-key [f8] 'neotree-toggle)
-(global-set-key [f9] 'neotree-dir)
-#+END_SRC
-* python-mode
-#+BEGIN_SRC emacs-lisp
-;;; Basic python mode configuration
-;; (setq auto-mode-alist
-;;       (append '(("SConstruct\\'" . python-mode)
-;; 				("SConscript\\'" . python-mode))
-;;               auto-mode-alist))
-
-(require-package 'pip-requirements)
-
-
-;;; iPython configuration
-(setq
- python-shell-interpreter "ipython3"
- python-shell-interpreter-args "-i"
- ;; python-shell-completion-native-enable nil
- ;; python-shell-prompt-regexp "In \\[[0-9]+\\]: "
- ;; python-shell-prompt-output-regexp "Out\\[[0-9]+\\]: "
- ;; python-shell-completion-setup-code
- ;; "from IPython.core.completerlib import module_completion"
- ;; python-shell-completion-module-string-code
- ;; "';'.join(module_completion('''%s'''))\n"
- ;; python-shell-completion-string-code
- ;; "';'.join(get_ipython().Completer.all_completions('''%s'''))\n"
- )
-
-;;; python style checking
-;; (require-package 'pep8)
-;; (require-package 'pylint)
-
-;; integrate autopep8
-(require-package 'py-autopep8)
-(add-hook 'python-mode-hook 'py-autopep8-enable-on-save)
-
-
-;;; pymacs and ropemacs configuration
-;; (require-package 'pymacs)
-
-;; (eval-after-load 'python
-;;   '(progn
-;; 	 (autoload 'pymacs-apply "pymacs")
-;; 	 (autoload 'pymacs-call "pymacs")
-;; 	 (autoload 'pymacs-eval "pymacs" nil t)
-;; 	 (autoload 'pymacs-exec "pymacs" nil t)
-;; 	 (autoload 'pymacs-load "pymacs" nil t)
-;; 	 (message "loading ropemacs")
-;; 	 (pymacs-load "ropemacs" "rope-")
-;; 	 (setq ropemacs-enable-autoimport t)))
-
-;;; jedi configuration
-(require-package 'company-jedi)
-(defun company-jedi-setup ()
-  "Configure company-backends for company-jedi and company-yasnippet."
-  (push '(company-jedi :with company-yasnippet) company-backends)
-  ;; (add-to-list 'company-backends 'company-jedi)
-  )
-(add-hook 'python-mode-hook 'company-jedi-setup)
-
-(setq jedi:setup-keys t)
-(setq jedi:complete-on-dot t)
-(add-hook 'python-mode-hook 'jedi:setup)
-
-(setq jedi-custom-file (expand-file-name "jedi-custom.el" user-emacs-directory))
-(when (file-exists-p jedi-custom-file)
-  (load jedi-custom-file))
-
-
-#+END_SRC
-* whitespace
-#+BEGIN_SRC emacs-lisp
-(setq-default show-trailing-whitespace t)
-
-;;; Whitespace
-(defun sanityinc/no-trailing-whitespace ()
-  "Turn off display of trailing whitespace in this buffer."
-  (setq show-trailing-whitespace nil))
-
-;; But don't show trailing whitespace in SQLi, inf-ruby etc.
-(dolist (hook '(special-mode-hook
-                Info-mode-hook
-                eww-mode-hook
-                term-mode-hook
-                comint-mode-hook
-                compilation-mode-hook
-                twittering-mode-hook
-                minibuffer-setup-hook))
-  (add-hook hook #'sanityinc/no-trailing-whitespace))
-
-(require-package 'whitespace-cleanup-mode)
-(add-hook 'after-init-hook 'global-whitespace-cleanup-mode)
-(after-load 'whitespace-cleanup-mode
-  (diminish 'whitespace-cleanup-mode))
-
-(global-set-key [remap just-one-space] 'cycle-spacing)
-#+END_SRC
-* code
-#+BEGIN_SRC emacs-lisp
-(require-package 'code-library)
-
-(setq code-library-directory "~/Dropbox/OrgNotes/CodeLibrary/")
-(setq code-library-mode-file-alist
-      '((c-mode . "c_cpp.org")
-        (c++-mode . "c_cpp.org")
-        (python-mode . "python.org")
-        (latex-mode . "tex.org")))
-#+END_SRC
-* projectile
-#+BEGIN_SRC emacs-lisp
-(when (maybe-require-package 'projectile)
-  (add-hook 'after-init-hook 'projectile-mode)
-
-  ;; Shorter modeline
-  (after-load 'projectile
-    (setq-default
-     projectile-mode-line
-     '(:eval
-       (if (file-remote-p default-directory)
-           " Proj"
-         (format " Proj[%s]" (projectile-project-name))))))
-
-  (setq projectile-keymap-prefix (kbd "C-c p"))
-
-  ;;Configuration for Windows
-  ;; (when *is-a-windows*
-  ;;   (setq projectile-indexing-method 'alien))
-  )
 #+END_SRC
 * ibuffer
 #+BEGIN_SRC emacs-lisp
@@ -1154,102 +879,11 @@ With arg N, insert N newlines."
 (global-set-key (kbd "C-x C-b") 'ibuffer)
 
 #+END_SRC
-* markdown
+* neotree
 #+BEGIN_SRC emacs-lisp
-(when (maybe-require-package 'markdown-mode)
-  (add-auto-mode 'markdown-mode "\\.md\\.html\\'")
-  (after-load 'whitespace-cleanup-mode
-    (push 'markdown-mode whitespace-cleanup-mode-ignore-modes)))
-#+END_SRC
-* smex
-#+BEGIN_SRC emacs-lisp
-;; Use smex to handle M-x
-(when (maybe-require-package 'smex)
-  ;; Change path for ~/.smex-items
-  (setq-default smex-save-file (expand-file-name ".smex-items" user-emacs-directory))
-  (global-set-key [remap execute-extended-command] 'smex))
-
-;; type hyphen instead of space when pressing space
-;; found at: https://www.emacswiki.org/emacs/Smex
-;; (defadvice smex (around space-inserts-hyphen activate compile)
-;;         (let ((ido-cannot-complete-command
-;;                `(lambda ()
-;;                   (interactive)
-;;                   (if (string= " " (this-command-keys))
-;;                       (insert ?-)
-;;                     (funcall ,ido-cannot-complete-command)))))
-;;           ad-do-it))
-#+END_SRC
-* fci
-#+BEGIN_SRC emacs-lisp
-;; Fill column indicator
-(require-package 'fill-column-indicator)
-(defun sanityinc/prog-mode-fci-settings ()
-  (turn-on-fci-mode)
-  (when show-trailing-whitespace
-    (set (make-local-variable 'whitespace-style) '(face trailing))
-    (whitespace-mode 1)))
-
-(add-hook 'c++-mode-hook 'sanityinc/prog-mode-fci-settings)
-(add-hook 'c-mode-hook 'sanityinc/prog-mode-fci-settings)
-(add-hook 'python-mode-hook 'sanityinc/prog-mode-fci-settings)
-
-(defun sanityinc/fci-enabled-p ()
-  (bound-and-true-p fci-mode))
-
-(defvar sanityinc/fci-mode-suppressed nil)
-(make-variable-buffer-local 'sanityinc/fci-mode-suppressed)
-
-(defadvice popup-create (before suppress-fci-mode activate)
-  "Suspend fci-mode while popups are visible"
-  (let ((fci-enabled (sanityinc/fci-enabled-p)))
-    (when fci-enabled
-      (setq sanityinc/fci-mode-suppressed fci-enabled)
-      (turn-off-fci-mode))))
-(defadvice popup-delete (after restore-fci-mode activate)
-  "Restore fci-mode when all popups have closed"
-  (when (and sanityinc/fci-mode-suppressed
-             (null popup-instances))
-    (setq sanityinc/fci-mode-suppressed nil)
-    (turn-on-fci-mode)))
-
-;; Regenerate fci-mode line images after switching themes
-(defadvice enable-theme (after recompute-fci-face activate)
-  (dolist (buffer (buffer-list))
-    (with-current-buffer buffer
-      (when (sanityinc/fci-enabled-p)
-        (turn-on-fci-mode)))))
-
-;; Fix misalignment for company completion with fci-mode on
-(defvar-local company-fci-mode-on-p nil)
-
-(defun company-turn-off-fci (&rest ignore)
-  (when (boundp 'fci-mode)
-    (setq company-fci-mode-on-p fci-mode)
-    (when fci-mode (fci-mode -1))))
-
-(defun company-maybe-turn-on-fci (&rest ignore)
-  (when company-fci-mode-on-p (fci-mode 1)))
-
-(add-hook 'company-completion-started-hook 'company-turn-off-fci)
-(add-hook 'company-completion-finished-hook 'company-maybe-turn-on-fci)
-(add-hook 'company-completion-cancelled-hook 'company-maybe-turn-on-fci)
-
-
-#+END_SRC
-* vc
-#+BEGIN_SRC emacs-lisp
-(when (maybe-require-package 'diff-hl)
-  (add-hook 'magit-post-refresh-hook 'diff-hl-magit-post-refresh)
-  (add-hook 'after-init-hook 'global-diff-hl-mode)
-
-  (after-load 'diff-hl
-    (define-key diff-hl-mode-map
-      (kbd "<left-fringe> <mouse-1>")
-      'diff-hl-diff-goto-hunk)))
-
-(maybe-require-package 'browse-at-remote)
-
+(require-package 'neotree)
+(global-set-key [f8] 'neotree-toggle)
+(global-set-key [f9] 'neotree-dir)
 #+END_SRC
 * git
 #+BEGIN_SRC emacs-lisp
@@ -1283,97 +917,110 @@ With arg N, insert N newlines."
 (when (maybe-require-package 'git-commit)
   (add-hook 'git-commit-mode-hook 'goto-address-mode))
 
-;; (when *is-a-mac*
-;;   (after-load 'magit
-;;     (add-hook 'magit-mode-hook (lambda () (local-unset-key [(meta h)])))))
-
-
-
-;; Convenient binding for vc-git-grep
-(after-load 'vc
-  (define-key vc-prefix-map (kbd "f") 'vc-git-grep))
-
-
-
-;;; git-svn support
-
-;; (when (maybe-require-package 'magit-svn)
-;;   (require-package 'magit-svn)
-;;   (autoload 'magit-svn-enabled "magit-svn")
-;;   (defun sanityinc/maybe-enable-magit-svn-mode ()
-;;     (when (magit-svn-enabled)
-;;       (magit-svn-mode)))
-;;   (add-hook 'magit-status-mode-hook #'sanityinc/maybe-enable-magit-svn-mode))
-
 (after-load 'compile
   (dolist (defn (list '(git-svn-updated "^\t[A-Z]\t\\(.*\\)$" 1 nil nil 0 1)
                       '(git-svn-needs-update "^\\(.*\\): needs update$" 1 nil nil 2 1)))
     (add-to-list 'compilation-error-regexp-alist-alist defn)
     (add-to-list 'compilation-error-regexp-alist (car defn))))
 
-(defvar git-svn--available-commands nil "Cached list of git svn subcommands")
-(defun git-svn--available-commands ()
-  (or git-svn--available-commands
-      (setq git-svn--available-commands
-            (sanityinc/string-all-matches
-             "^  \\([a-z\\-]+\\) +"
-             (shell-command-to-string "git svn help") 1))))
+;;;;;;;;; snv-stuff ;;;;;;;;;
+;;(defvar git-svn--available-commands nil "Cached list of git svn subcommands")
+;;(defun git-svn--available-commands ()
+;;  (or git-svn--available-commands
+;;      (setq git-svn--available-commands
+;;            (sanityinc/string-all-matches
+;;             "^  \\([a-z\\-]+\\) +"
+;;             (shell-command-to-string "git svn help") 1))))
+;;
+;;(autoload 'vc-git-root "vc-git")
+;;
+;;(defun git-svn (dir command)
+;;  "Run a git svn subcommand in DIR."
+;;  (interactive (list (read-directory-name "Directory: ")
+;;                     (completing-read "git-svn command: " (git-svn--available-commands) nil t nil nil (git-svn--available-commands))))
+;;  (let* ((default-directory (vc-git-root dir))
+;;         (compilation-buffer-name-function (lambda (major-mode-name) "*git-svn*")))
+;;    (compile (concat "git svn " command))))
+;;
 
-(autoload 'vc-git-root "vc-git")
+;;(maybe-require-package 'git-messenger)
+;;;; Though see also vc-annotate's "n" & "p" bindings
+;;(after-load 'vc
+;;  (setq git-messenger:show-detail t)
+;;  (define-key vc-prefix-map (kbd "p") #'git-messenger:popup-message))
+;;
 
-(defun git-svn (dir command)
-  "Run a git svn subcommand in DIR."
-  (interactive (list (read-directory-name "Directory: ")
-                     (completing-read "git-svn command: " (git-svn--available-commands) nil t nil nil (git-svn--available-commands))))
-  (let* ((default-directory (vc-git-root dir))
-         (compilation-buffer-name-function (lambda (major-mode-name) "*git-svn*")))
-    (compile (concat "git svn " command))))
+#+END_SRC
+* org
+#+BEGIN_SRC emacs-lisp
+;; change bullets
+(require 'org-bullets)
+(add-hook 'org-mode-hook (lambda () (org-bullets-mode 1)))
+;; org mode with flyspell-mode
+(add-hook 'org-mode-hook 'flyspell-mode)
+;; org mode with auto-fill-mode
+(add-hook 'org-mode-hook 'auto-fill-mode)
+;; custom config for org-latex-export-to-pdf
+(setq org-latex-packages-alist
+      '((""     "color"     t)
+        "\\tolerance=1000"
+        "\\definecolor{color1}{rgb}{0.1,0.0,0.7}"
+        "\\hypersetup{pdfauthor={Steve Simmert},colorlinks,linkcolor=color1, urlcolor=color1, breaklinks}"))
+;;;; Customize Heading font size
+;;(custom-set-faces
+;; '(org-level-1 ((t (:inherit outline-1 :height 1.2))))
+;; '(org-level-2 ((t (:inherit outline-2 :height 1.15))))
+;; '(org-level-3 ((t (:inherit outline-3 :height 1.1))))
+;; '(org-level-4 ((t (:inherit outline-4 :height 1.05))))
+;; '(org-level-5 ((t (:inherit outline-5 :height 1.0))))
+;; )
+
+;; display of entities as UTF-8 characters
+(setq org-pretty-entities t)
+
+;; (define-key global-map (kbd "C-c l") 'org-store-link)
+;; (define-key global-map (kbd "C-c a") 'org-agenda)
+
+(setq org-startup-indented t)
+
+;; Various preferences
+(setq org-log-done t
+      org-edit-timestamp-down-means-later t
+      org-archive-mark-done nil
+      org-hide-emphasis-markers t
+      org-catch-invisible-edits 'show
+      org-export-coding-system 'utf-8
+      org-fast-tag-selection-single-key 'expert
+      org-html-validation-link nil
+      org-export-kill-product-buffer-when-displayed t
+      org-tags-column 80
+      org-export-backends (quote (ascii html icalendar latex md))
+      org-startup-align-all-tables t)
+
+(setq org-support-shift-select t)
 
 
-(maybe-require-package 'git-messenger)
-;; Though see also vc-annotate's "n" & "p" bindings
-(after-load 'vc
-  (setq git-messenger:show-detail t)
-  (define-key vc-prefix-map (kbd "p") #'git-messenger:popup-message))
+;;; To-do settings
+;; configuration:
+;; (key) -shortcut for C-c C-t key
+;; (!) - make a time stamp when keyword is used
+;; (@) - ask for a note
+;; (/!) - also make timestamp when exiting the keyword
+(setq org-todo-keywords
+      (quote ((sequence "TODO(t)" "NEXT(n)" "|" "DONE(d!)")
+              (sequence "PROJECT(p)" "|" "DONE(d!)" "CANCELLED(c@!)")
+              (sequence "WAITING(w@/!)" "DELEGATED(e!@)" "HOLD(h)" "|" "DONE(d!)" "CANCELLED(c@!)")))
+      ;;org-todo-repeat-to-state "NEXT"
+      )
+;; can be set by:
+;; (setq org-todo-keyword-faces
+;;       '(
+;;         ("NOT-TODO" . (:foreground "blue" :weight bold))
+;;         ("IF-TIME" . (:foreground "yellow" :weight bold))
+;;         ("NOT-REPRO" . (:foreground "purple" :weight bold))
+;;         ))
 
-
+(setq org-todo-keyword-faces
+      (quote (("NEXT" :inherit warning)
+              ("PROJECT" :inherit font-lock-string-face))))
 #+END_SRC
-* github
-#+BEGIN_SRC emacs-lisp
-;; (require 'init-git)
-
-;; (maybe-require-package 'gist)
-;; (require-package 'github-browse-file)
-;; (require-package 'bug-reference-github)
-;; (add-hook 'prog-mode-hook 'bug-reference-prog-mode)
-
-;; (maybe-require-package 'github-clone)
-;; (maybe-require-package 'magithub)
-#+END_SRC
-* csv
-#+BEGIN_SRC emacs-lisp
-(require-package 'csv-mode)
-
-(add-auto-mode 'csv-mode "\\.[Cc][Ss][Vv]\\'")
-
-(setq csv-separators '("," ";" "|" " "))
-
-#+END_SRC
-* conversion python code
-from os import listdir
-from os.path import join
-
-directory = './lisp/'
-
-onlyfiles = [fl for fl in listdir(dr) if fl.endswith('.el')]
-
-with open('collected.org', 'w') as fl:
-         for ifl in onlyfiles:
-             with open(join(directory, ifl), 'r') as init_fl:
-                 lines = init_fl.readlines()
-                 fl.write(''.join([ifl.replace('init-', '* ').replace('.el', ''), '\n']))
-                 fl.write('#+BEGIN_SRC emacs-lisp\n')
-                 for line in lines:
-                     if not line.startswith('(provide'):
-                         fl.write(line)
-                 fl.write('#+END_SRC\n')
