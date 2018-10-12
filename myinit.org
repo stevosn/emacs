@@ -278,6 +278,26 @@ locate PACKAGE."
  recentf-max-saved-items 1000
  recentf-exclude '("/tmp/" "/ssh:"))
 #+END_SRC
+* smex
+#+BEGIN_SRC emacs-lisp
+;; This section get's the simple M-x command handler
+;; Use smex to handle M-x
+(when (maybe-require-package 'smex)
+  ;; Change path for ~/.smex-items
+  (setq-default smex-save-file (expand-file-name ".smex-items" user-emacs-directory))
+  (global-set-key [remap execute-extended-command] 'smex))
+
+;; type hyphen instead of space when pressing space
+;; found at: https://www.emacswiki.org/emacs/Smex
+;; (defadvice smex (around space-inserts-hyphen activate compile)
+;;         (let ((ido-cannot-complete-command
+;;                `(lambda ()
+;;                   (interactive)
+;;                   (if (string= " " (this-command-keys))
+;;                       (insert ?-)
+;;                     (funcall ,ido-cannot-complete-command)))))
+;;           ad-do-it))
+#+END_SRC
 * uniquify
 #+BEGIN_SRC emacs-lisp
 ;;----------------------------------------------------------------------------
