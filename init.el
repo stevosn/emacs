@@ -14,7 +14,7 @@
    [default default default italic underline success warning error])
  '(custom-enabled-themes (quote (misterioso)))
  '(inhibit-startup-screen t)
- '(package-selected-packages (quote (projectile avy company magit))))
+ '(package-selected-packages (quote (smex company magit))))
 
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
