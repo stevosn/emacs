@@ -71,6 +71,9 @@ LOAD-DURATION is the time taken in milliseconds to load FEATURE.")
 * Interface tweaks
 #+BEGIN_SRC emacs-lisp
 (tool-bar-mode -1)
+;; don't accelerate scrolling
+(setq mouse-wheel-progressive-speed nil)
+;; F5 for reloading the file
 (global-set-key (kbd "<f5>") 'revert-buffer)
 #+END_SRC
 * preload-local
