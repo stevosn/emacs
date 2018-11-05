@@ -1081,4 +1081,5 @@ With arg N, insert N newlines."
 
 ;; make unchecked checkboxes block DONE
 (setq org-enforce-todo-checkbox-dependencies t)
+(setq org-hierarchical-todo-statistics nil)
 #+END_SRC
