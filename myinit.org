@@ -1072,7 +1072,7 @@ With arg N, insert N newlines."
               )))
 
 ;; setup colors for ABC priorities
-(setq org-priority-faces '((?A . (:foreground "red" :weight bold))
+(setq org-priority-faces '((?A . (:foreground "gold" :weight bold))
                            (?B . (:foreground "yellow"))
                            (?C . (:foreground "DarkOliveGreen"))
                            ))
