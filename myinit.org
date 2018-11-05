@@ -1055,7 +1055,7 @@ With arg N, insert N newlines."
 ;; (/!) - also make timestamp when exiting the keyword
 (setq org-todo-keywords
       (quote ((sequence "TODO(t)" "NEXT(n)" "|" "DONE(d!)")
-              (sequence "PROJECT(p)" "|" "DONE(d!)" "CANCELLED(c@!)")
+              (sequence "PROJECT(p)" "MILESTONE(m)"  "|" "DONE(d!)" "CANCELLED(c@!)")
               (sequence "WAITING(w@/!)" "DELEGATED(e!@)" "HOLD(h)" "|" "DONE(d!)" "CANCELLED(c@!)")))
       ;;org-todo-repeat-to-state "NEXT"
       )
@@ -1069,7 +1069,11 @@ With arg N, insert N newlines."
 
 (setq org-todo-keyword-faces
       (quote (("NEXT" :inherit warning)
-              ("PROJECT" :inherit font-lock-string-face))))
+              ;;("MILESTONE" :inherit warning )
+              ("MILESTONE" :foreground "orange" :weight bold)
+              ;;("PROJECT" :inherit font-lock-string-face)
+              ("PROJECT" :foreground "purple" :weight bold :underline t)
+              )))
 
 ;; automatically set DONE or TODO depending on subtasks
 (defun org-summary-todo (n-done n-not-done)
