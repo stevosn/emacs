@@ -1054,26 +1054,28 @@ With arg N, insert N newlines."
 ;; (@) - ask for a note
 ;; (/!) - also make timestamp when exiting the keyword
 (setq org-todo-keywords
-      (quote ((sequence "TODO(t)" "NEXT(n)" "|" "DONE(d!)")
+      (quote ((sequence "TODO(t)" "|" "DONE(d!)")
               (sequence "PROJECT(p)" "MILESTONE(m)"  "|" "DONE(d!)" "CANCELLED(c@!)")
               (sequence "WAITING(w@/!)" "DELEGATED(e!@)" "HOLD(h)" "|" "DONE(d!)" "CANCELLED(c@!)")))
-      ;;org-todo-repeat-to-state "NEXT"
+      ;;org-todo-repeat-to-state "TODO"
       )
-;; can be set by:
-;; (setq org-todo-keyword-faces
-;;       '(
-;;         ("NOT-TODO" . (:foreground "blue" :weight bold))
-;;         ("IF-TIME" . (:foreground "yellow" :weight bold))
-;;         ("NOT-REPRO" . (:foreground "purple" :weight bold))
-;;         ))
 
+;; setup colors for keywords
 (setq org-todo-keyword-faces
-      (quote (("NEXT" :inherit warning)
+      (quote (("TODO" :foreground "MediumSeaGreen" :weight bold :underline t)
+              ("DONE" :foreground "forestgreen")
+              ("CANCELLED" :foreground "DarkGreen")
               ;;("MILESTONE" :inherit warning )
               ("MILESTONE" :foreground "orange" :weight bold)
               ;;("PROJECT" :inherit font-lock-string-face)
-              ("PROJECT" :foreground "purple" :weight bold :underline t)
+              ("PROJECT" :foreground "MediumSlateBlue" :weight bold :underline t)
               )))
+
+;; setup colors for ABC priorities
+(setq org-priority-faces '((?A . (:foreground "red" :weight bold))
+                           (?B . (:foreground "yellow"))
+                           (?C . (:foreground "DarkOliveGreen"))
+                           ))
 
 ;; automatically set DONE or TODO depending on subtasks
 (defun org-summary-todo (n-done n-not-done)
