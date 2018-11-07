@@ -14,9 +14,8 @@
    [default default default italic underline success warning error])
  '(custom-enabled-themes (quote (misterioso)))
  '(inhibit-startup-screen t)
- '(package-selected-packages
-   (quote
-    (git-timemachine gitconfig-mode gitignore-mode git-blamed neotree ibuffer-vc company magit))))
+ '(org-agenda-files (quote ("~/Documents/notes/work.org")))
+ '(package-selected-packages (quote (company magit))))
 
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
