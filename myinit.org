@@ -141,7 +141,7 @@ LOAD-DURATION is the time taken in milliseconds to load FEATURE.")
 
 ;; We include the org repository for completeness, but don't normally
 ;; use it.
-(add-to-list 'package-archives '("org" . "http://orgmode.org/elpa/"))
+(add-to-list 'package-archives '("org" . "https://orgmode.org/elpa/"))
 
 ;;; On-demand installation of packages
 (defun require-package (package &optional min-version no-refresh)
@@ -1088,4 +1088,11 @@ With arg N, insert N newlines."
 ;; make unchecked checkboxes block DONE
 (setq org-enforce-todo-checkbox-dependencies t)
 (setq org-hierarchical-todo-statistics nil)
+#+END_SRC
+* reveal.js
+#+BEGIN_SRC emacs-lisp
+(use-package ox-reveal :ensure ox-reveal)
+
+(setq org-reveal-root "http://cdn.jsdelivr.net/reveal.js/3.0.0/")
+(setq org-reveal-mathjax t)
 #+END_SRC
