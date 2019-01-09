@@ -200,6 +200,14 @@ LOAD-DURATION is the time taken in milliseconds to load FEATURE.")
 
   (add-hook 'package-menu-mode-hook 'sanityinc/maybe-widen-package-menu-columns)
 #+END_SRC
+* use-package
+#+BEGIN_SRC emacs-lisp
+(require-package 'use-package)
+  (eval-when-compile
+    ;; Following line is not needed if use-package.el is in ~/.emacs.d
+    ;; (add-to-list 'load-path "<path where use-package is installed>")
+    (require 'use-package))
+#+END_SRC
 * themes
 #+BEGIN_SRC emacs-lisp
 ;; (require-package 'color-theme-sanityinc-solarized)
