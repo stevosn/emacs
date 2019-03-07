@@ -295,10 +295,10 @@ LOAD-DURATION is the time taken in milliseconds to load FEATURE.")
 #+BEGIN_SRC emacs-lisp
 ;; This section get's the simple M-x command handler
 ;; Use smex to handle M-x
-(when (maybe-require-package 'smex)
-  ;; Change path for ~/.smex-items
-  (setq-default smex-save-file (expand-file-name ".smex-items" user-emacs-directory))
-  (global-set-key [remap execute-extended-command] 'smex))
+;;(when (maybe-require-package 'smex)
+;;  ;; Change path for ~/.smex-items
+;;  (setq-default smex-save-file (expand-file-name ".smex-items" user-emacs-directory))
+;;  (global-set-key [remap execute-extended-command] 'smex))
 
 ;; type hyphen instead of space when pressing space
 ;; found at: https://www.emacswiki.org/emacs/Smex
@@ -944,94 +944,98 @@ With arg N, insert N newlines."
 #+END_SRC
 * org
 #+BEGIN_SRC emacs-lisp
-;; change bullets
-(require 'org-bullets)
-(add-hook 'org-mode-hook (lambda () (org-bullets-mode 1)))
-;; org mode with flyspell-mode
-(add-hook 'org-mode-hook 'flyspell-mode)
-;; org mode with auto-fill-mode
-(add-hook 'org-mode-hook 'auto-fill-mode)
-;; custom config for org-latex-export-to-pdf
-(setq org-latex-packages-alist
-      '((""     "color"     t)
-        "\\tolerance=1000"
-        "\\definecolor{color1}{rgb}{0.1,0.0,0.7}"
-        "\\hypersetup{pdfauthor={Steve Simmert},colorlinks,linkcolor=color1, urlcolor=color1, breaklinks}"))
-;;;; Customize Heading font size
-;;(custom-set-faces
-;; '(org-level-1 ((t (:inherit outline-1 :height 1.2))))
-;; '(org-level-2 ((t (:inherit outline-2 :height 1.15))))
-;; '(org-level-3 ((t (:inherit outline-3 :height 1.1))))
-;; '(org-level-4 ((t (:inherit outline-4 :height 1.05))))
-;; '(org-level-5 ((t (:inherit outline-5 :height 1.0))))
-;; )
+  ;;
+  ;; (setq inhibit-compacting-font-caches t)
+  ;; change bullets
+  ;; (require 'org-bullets)
+  ;; (add-hook 'org-mode-hook (lambda () (org-bullets-mode 1)))
 
-;; display of entities as UTF-8 characters
-(setq org-pretty-entities t)
+  ;; ;;; org mode with flyspell-mode
+  ;; ;; (add-hook 'org-mode-hook 'flyspell-mode)
+  ;;; org mode with auto-fill-mode
+  (add-hook 'org-mode-hook 'auto-fill-mode)
+  ;; custom config for org-latex-export-to-pdf
+  (setq org-latex-packages-alist
+        '((""     "color"     t)
+          "\\tolerance=1000"
+          "\\definecolor{color1}{rgb}{0.1,0.0,0.7}"
+          "\\hypersetup{pdfauthor={Steve Simmert},colorlinks,linkcolor=color1, urlcolor=color1, breaklinks}"))
+  ;; Customize Heading font size
+  (custom-set-faces
+  '(org-level-1 ((t (:inherit outline-1 :height 1.2))))
+  '(org-level-2 ((t (:inherit outline-2 :height 1.15))))
+  '(org-level-3 ((t (:inherit outline-3 :height 1.1))))
+  '(org-level-4 ((t (:inherit outline-4 :height 1.05))))
+  '(org-level-5 ((t (:inherit outline-5 :height 1.0))))
+  )
 
-;; (define-key global-map (kbd "C-c l") 'org-store-link)
-;; (define-key global-map (kbd "C-c a") 'org-agenda)
+  ;; ;; display of entities as UTF-8 characters
+  ;; (setq org-pretty-entities t)
 
-(setq org-startup-indented t)
+  ;; ;; (define-key global-map (kbd "C-c l") 'org-store-link)
+  ;; ;; (define-key global-map (kbd "C-c a") 'org-agenda)
 
-;; Various preferences
-(setq org-log-done t
-      org-edit-timestamp-down-means-later t
-      org-archive-mark-done nil
-      org-hide-emphasis-markers t
-      org-catch-invisible-edits 'show
-      org-export-coding-system 'utf-8
-      org-fast-tag-selection-single-key 'expert
-      org-html-validation-link nil
-      org-export-kill-product-buffer-when-displayed t
-      org-tags-column 80
-      org-export-backends (quote (ascii html icalendar latex md))
-      org-startup-align-all-tables t)
+  ;; use indentation for org heading levels
+  (setq org-startup-indented t)
 
-(setq org-support-shift-select t)
+  ;; Various preferences
+  (setq org-log-done t
+        org-edit-timestamp-down-means-later t
+        org-archive-mark-done nil
+        org-hide-emphasis-markers t
+        org-catch-invisible-edits 'show
+        org-export-coding-system 'utf-8
+        org-fast-tag-selection-single-key 'expert
+        org-html-validation-link nil
+        org-export-kill-product-buffer-when-displayed t
+        org-tags-column 80
+        org-export-backends (quote (ascii html icalendar latex md))
+        org-startup-align-all-tables t)
 
-
-;;; To-do settings
-;; configuration:
-;; (key) -shortcut for C-c C-t key
-;; (!) - make a time stamp when keyword is used
-;; (@) - ask for a note
-;; (/!) - also make timestamp when exiting the keyword
-(setq org-todo-keywords
-      (quote ((sequence "TODO(t)" "|" "DONE(d!)")
-              (sequence "PROJECT(p)" "MILESTONE(m)"  "|" "DONE(d!)" "CANCELLED(c@!)")
-              (sequence "WAITING(w@/!)" "DELEGATED(e!@)" "HOLD(h)" "|" "DONE(d!)" "CANCELLED(c@!)")))
-      ;;org-todo-repeat-to-state "TODO"
-      )
+  ;; holding shift + coursor movement selects
+  (setq org-support-shift-select t)
 
-;; setup colors for keywords
-(setq org-todo-keyword-faces
-      (quote (("TODO" :foreground "MediumSeaGreen" :weight bold :underline t)
-              ("DONE" :foreground "forestgreen")
-              ("CANCELLED" :foreground "DarkGreen")
-              ;;("MILESTONE" :inherit warning )
-              ("MILESTONE" :foreground "orange" :weight bold)
-              ;;("PROJECT" :inherit font-lock-string-face)
-              ("PROJECT" :foreground "MediumSlateBlue" :weight bold :underline t)
-              )))
+  ;;; To-do settings
+  ;; configuration:
+  ;; (key) -shortcut for C-c C-t key
+  ;; (!) - make a time stamp when keyword is used
+  ;; (@) - ask for a note
+  ;; (/!) - also make timestamp when exiting the keyword
+  (setq org-todo-keywords
+        (quote ((sequence "TODO(t)" "|" "DONE(d!)")
+                (sequence "PROJECT(p)" "MILESTONE(m)"  "|" "DONE(d!)" "CANCELLED(c@!)")
+                (sequence "WAITING(w@/!)" "DELEGATED(e!@)" "HOLD(h)" "|" "DONE(d!)" "CANCELLED(c@!)")))
+        ;;org-todo-repeat-to-state "TODO"
+        )
 
-;; setup colors for ABC priorities
-(setq org-priority-faces '((?A . (:foreground "gold" :weight bold))
-                           (?B . (:foreground "yellow"))
-                           (?C . (:foreground "DarkOliveGreen"))
-                           ))
+  ;; setup colors for keywords
+  (setq org-todo-keyword-faces
+        (quote (("TODO" :foreground "MediumSeaGreen" :weight bold :underline t)
+                ("DONE" :foreground "forestgreen")
+                ("CANCELLED" :foreground "DarkGreen")
+                ;;("MILESTONE" :inherit warning )
+                ("MILESTONE" :foreground "orange" :weight bold)
+                ;;("PROJECT" :inherit font-lock-string-face)
+                ("PROJECT" :foreground "MediumSlateBlue" :weight bold :underline t)
+                )))
 
-;; automatically set DONE or TODO depending on subtasks
-(defun org-summary-todo (n-done n-not-done)
-  "Switch entry to DONE when all subentries are done, to TODO otherwise."
-  (let (org-log-done org-log-states)   ; turn off logging
-    (org-todo (if (= n-not-done 0) "DONE" "TODO"))))
+  ;; setup colors for ABC priorities
+  (setq org-priority-faces '((?A . (:foreground "gold" :weight bold))
+                             (?B . (:foreground "yellow"))
+                             (?C . (:foreground "DarkOliveGreen"))
+                             ))
 
-(add-hook 'org-after-todo-statistics-hook 'org-summary-todo)
+  ;; automatically set DONE or TODO depending on subtasks
+  (defun org-summary-todo (n-done n-not-done)
+    "Switch entry to DONE when all subentries are done, to TODO otherwise."
+    (let (org-log-done org-log-states)   ; turn off logging
+      (org-todo (if (= n-not-done 0) "DONE" "TODO"))))
 
-;; make unchecked checkboxes block DONE
-(setq org-enforce-todo-checkbox-dependencies t)
-(setq org-hierarchical-todo-statistics nil)
+  ;; (add-hook 'org-after-todo-statistics-hook 'org-summary-todo)
+
+  ;; make unchecked checkboxes block DONE
+  (setq org-enforce-todo-checkbox-dependencies t)
+  (setq org-hierarchical-todo-statistics nil)
 #+END_SRC
 * reveal.js
 #+BEGIN_SRC emacs-lisp
