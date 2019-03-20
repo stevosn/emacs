@@ -2,6 +2,154 @@
 put in
 (org-babel-load-file (expand-file-name "~/.emacs.d/myinit.org"))
 to read the orgfile as a myinit.el file! (which is created by org-babel..)
+* Interface tweaks
+#+BEGIN_SRC emacs-lisp
+  ;; line number configuration
+    (global-linum-mode t)
+    ;; disable line number display for some modes
+    (setq linum-disabled-modes-list '(org-mode text-mode))
+    (defun linum-on ()
+     (unless (or (minibufferp)
+      (member major-mode linum-disabled-modes-list))
+	(linum-mode 1)))
+
+  ;; no tool bar
+  (tool-bar-mode -1)
+
+  ;; don't accelerate scrolling
+  (setq mouse-wheel-progressive-speed nil)
+
+  ;; F5 for reloading the file
+  (global-set-key (kbd "<f5>") 'revert-buffer)
+
+  ;; change backup file directory
+  (setq backup-directory-alist `(("." . "~/.emacs_backups")))
+
+  ;; stop creating those #auto-save# files
+  (setq auto-save-default nil)
+
+  ;; make typing delete/overwrites selected text
+  (delete-selection-mode 1)
+
+  ;; auto insert closing bracket
+  (electric-pair-mode 1)
+
+  ;; turn on bracket match highlight
+  (show-paren-mode 1)
+
+  ;; accept y/n for yes/no
+  (defalias 'yes-or-no-p 'y-or-n-p)
+
+  ;; enable recent files
+  (add-hook 'after-init-hook 'recentf-mode)
+  (setq-default
+   recentf-max-saved-items 1000
+   recentf-exclude '("/tmp/" "/ssh:"))
+   
+   ;; Train myself to use M-f and M-b instead
+   (global-unset-key [M-left])
+   (global-unset-key [M-right])
+
+#+END_SRC
+* require-package
+#+BEGIN_SRC emacs-lisp
+;;; On-demand installation of packages
+  (defun require-package (package &optional min-version no-refresh)
+    "Install given PACKAGE, optionally requiring MIN-VERSION.
+  If NO-REFRESH is non-nil, the available package lists will not be
+  re-downloaded in order to locate PACKAGE."
+    (if (package-installed-p package min-version)
+        t
+      (if (or (assoc package package-archive-contents) no-refresh)
+          (if (boundp 'package-selected-packages)
+              ;; Record this as a package the user installed explicitly
+              (package-install package nil)
+            (package-install package))
+        (progn
+          (package-refresh-contents)
+          (require-package package min-version t)))))
+
+
+  (defun maybe-require-package (package &optional min-version no-refresh)
+    "Try to install PACKAGE, and return non-nil if successful.
+  In the event of failure, return nil and print a warning message.
+  Optionally require MIN-VERSION.  If NO-REFRESH is non-nil, the
+  available package lists will not be re-downloaded in order to
+  locate PACKAGE."
+    (condition-case err
+        (require-package package min-version no-refresh)
+      (error
+       (message "Couldn't install optional package `%s': %S" package err)
+       nil)))
+#+END_SRC
+* elpa
+#+BEGIN_SRC emacs-lisp
+  (require 'package)
+
+  ;; ;;; Install into separate package dirs for each Emacs version, to prevent bytecode incompatibility
+  ;; (let ((versioned-package-dir
+  ;;        (expand-file-name (format "elpa-%s.%s" emacs-major-version emacs-minor-version)
+  ;;                          user-emacs-directory)))
+  ;;   (setq package-user-dir versioned-package-dir))
+
+  ;; ;;; Standard package repositories
+
+  ;; (let* ((no-ssl (and (memq system-type '(windows-nt ms-dos))
+  ;;                     (not (gnutls-available-p))))
+  ;;        (proto (if no-ssl "http" "https")))
+  ;;   (add-to-list 'package-archives (cons "melpa" (concat proto "://melpa.org/packages/")) t)
+  ;;   ;; Official MELPA Mirror, in case necessary.
+  ;;   ;;(add-to-list 'package-archives (cons "melpa-mirror" (concat proto "://www.mirrorservice.org/sites/melpa.org/packages/")) t)
+  ;;   (if (< emacs-major-version 24)
+  ;;       ;; For important compatibility libraries like cl-lib
+  ;;       (add-to-list 'package-archives '("gnu" . (concat proto "://elpa.gnu.org/packages/")))
+  ;;     (unless no-ssl
+  ;;       ;; Force SSL for GNU ELPA
+  ;;       (setcdr (assoc "gnu" package-archives) "https://elpa.gnu.org/packages/"))))
+
+  ;; ;; We include the org repository for completeness, but don't normally
+  ;; ;; use it.
+  ;; (add-to-list 'package-archives '("org" . "https://orgmode.org/elpa/"))
+
+  ;; ;;; Fire up package.el
+  ;; (setq package-enable-at-startup nil)
+  ;; (package-initialize)
+
+  ;; (require-package 'fullframe)
+  ;; (fullframe list-packages quit-window)
+
+  ;; (require-package 'cl-lib)
+  ;; (require 'cl-lib)
+
+  ;; (defun sanityinc/set-tabulated-list-column-width (col-name width)
+  ;;   "Set any column with name COL-NAME to the given WIDTH."
+  ;;   (when (> width (length col-name))
+  ;;     (cl-loop for column across tabulated-list-format
+  ;;              when (string= col-name (car column))
+  ;;              do (setf (elt column 1) width))))
+
+  ;; (defun sanityinc/maybe-widen-package-menu-columns ()
+  ;;   "Widen some columns of the package menu table to avoid truncation."
+  ;;   (when (boundp 'tabulated-list-format)
+  ;;     (sanityinc/set-tabulated-list-column-width "Version" 13)
+  ;;     (let ((longest-archive-name (apply 'max (mapcar 'length (mapcar 'car package-archives)))))
+  ;;       (sanityinc/set-tabulated-list-column-width "Archive" longest-archive-name))))
+
+  ;; (add-hook 'package-menu-mode-hook 'sanityinc/maybe-widen-package-menu-columns)
+#+END_SRC
+* multiple cursors
+#+BEGIN_SRC emacs-lisp
+  (require 'multiple-cursors)
+
+  ;; add cursors to selection of lines
+  (global-set-key (kbd "C-S-c C-S-c") 'mc/edit-lines)
+
+  ;; add cursors to same keywords
+  ;; first mark the word then add cursors
+  (global-set-key (kbd "C->") 'mc/mark-next-like-this)
+  (global-set-key (kbd "C-<") 'mc/mark-previous-like-this)
+  (global-set-key (kbd "C-c C-<") 'mc/mark-all-like-this)
+#+END_SRC
 * org
 #+BEGIN_SRC emacs-lisp
   (require 'org)
@@ -10,3 +158,24 @@ to read the orgfile as a myinit.el file! (which is created by org-babel..)
   (setq org-log-done t)
   (setq org-agenda-files (list "~/Documents/notes/work.org"))
 #+END_SRC
+* smex
+#+BEGIN_SRC emacs-lisp
+  ;; This section get's the simple M-x command handler
+  ;; Use smex to handle M-x
+  (when (maybe-require-package 'smex)
+   ;; Change path for ~/.smex-items
+   (setq-default smex-save-file (expand-file-name ".smex-items" user-emacs-directory))
+   (global-set-key [remap execute-extended-command] 'smex))
+
+  ;; type hyphen instead of space when pressing space
+  ;; found at: https://www.emacswiki.org/emacs/Smex
+  (defadvice smex (around space-inserts-hyphen activate compile)
+	  (let ((ido-cannot-complete-command
+		 `(lambda ()
+		    (interactive)
+		    (if (string= " " (this-command-keys))
+			(insert ?-)
+		      (funcall ,ido-cannot-complete-command)))))
+	    ad-do-it))
+#+END_SRC
+
