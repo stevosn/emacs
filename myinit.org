@@ -139,22 +139,22 @@ to read the orgfile as a myinit.el file! (which is created by org-babel..)
 #+END_SRC
 * multiple cursors
 #+BEGIN_SRC emacs-lisp
-  (require 'multiple-cursors)
+  ;; (require 'multiple-cursors)
 
   ;; add cursors to selection of lines
-  (global-set-key (kbd "C-S-c C-S-c") 'mc/edit-lines)
+  ;; (global-set-key (kbd "C-S-c C-S-c") 'mc/edit-lines)
 
-  ;; add cursors to same keywords
-  ;; first mark the word then add cursors
-  (global-set-key (kbd "C->") 'mc/mark-next-like-this)
-  (global-set-key (kbd "C-<") 'mc/mark-previous-like-this)
-  (global-set-key (kbd "C-c C-<") 'mc/mark-all-like-this)
+  ;; ;; add cursors to same keywords
+  ;; ;; first mark the word then add cursors
+  ;; (global-set-key (kbd "C->") 'mc/mark-next-like-this)
+  ;; (global-set-key (kbd "C-<") 'mc/mark-previous-like-this)
+  ;; (global-set-key (kbd "C-c C-<") 'mc/mark-all-like-this)
 #+END_SRC
 * org
 #+BEGIN_SRC emacs-lisp
   (require 'org)
-  (define-key global-map "\C-c l" 'org-store-link)
-  (define-key global-map "\C-c a" 'org-agenda)
+  (define-key global-map "\C-cl" 'org-store-link)
+  (define-key global-map "\C-ca" 'org-agenda)
   (setq org-log-done t)
   (setq org-agenda-files (list "~/Documents/notes/work.org"))
 #+END_SRC
