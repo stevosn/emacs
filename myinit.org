@@ -300,16 +300,16 @@ LOAD-DURATION is the time taken in milliseconds to load FEATURE.")
    (setq-default smex-save-file (expand-file-name ".smex-items" user-emacs-directory))
    (global-set-key [remap execute-extended-command] 'smex))
 
-  type hyphen instead of space when pressing space
-  found at: https://www.emacswiki.org/emacs/Smex
+  ;; type hyphen instead of space when pressing space
+  ;; found at: https://www.emacswiki.org/emacs/Smex
   (defadvice smex (around space-inserts-hyphen activate compile)
-          (let ((ido-cannot-complete-command
-                 `(lambda ()
-                    (interactive)
-                    (if (string= " " (this-command-keys))
-                        (insert ?-)
-                      (funcall ,ido-cannot-complete-command)))))
-            ad-do-it))
+	  (let ((ido-cannot-complete-command
+		 `(lambda ()
+		    (interactive)
+		    (if (string= " " (this-command-keys))
+			(insert ?-)
+		      (funcall ,ido-cannot-complete-command)))))
+	    ad-do-it))
 #+END_SRC
 * uniquify
 #+BEGIN_SRC emacs-lisp
@@ -972,8 +972,10 @@ With arg N, insert N newlines."
   ;; ;; display of entities as UTF-8 characters
   ;; (setq org-pretty-entities t)
 
-  ;; ;; (define-key global-map (kbd "C-c l") 'org-store-link)
-  ;; ;; (define-key global-map (kbd "C-c a") 'org-agenda)
+  ;; Org agenda stuff
+  (define-key global-map (kbd "C-c l") 'org-store-link)
+  (define-key global-map (kbd "C-c a") 'org-agenda)
+  (setq org-agenda-files (list "~/Documents/notes/work.org"))
 
   ;; use indentation for org heading levels
   (setq org-startup-indented t)
