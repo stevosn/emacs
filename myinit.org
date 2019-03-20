@@ -2,3 +2,11 @@
 put in
 (org-babel-load-file (expand-file-name "~/.emacs.d/myinit.org"))
 to read the orgfile as a myinit.el file! (which is created by org-babel..)
+* org
+#+BEGIN_SRC emacs-lisp
+  (require 'org)
+  (define-key global-map "\C-cl" 'org-store-link)
+  (define-key global-map "\C-ca" 'org-agenda)
+  (setq org-log-done t)
+  (setq org-agenda-files (list "~/Documents/notes/work.org"))
+#+END_SRC
