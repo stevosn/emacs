@@ -972,8 +972,10 @@ With arg N, insert N newlines."
   ;; ;; display of entities as UTF-8 characters
   ;; (setq org-pretty-entities t)
 
-  ;; ;; (define-key global-map (kbd "C-c l") 'org-store-link)
-  ;; ;; (define-key global-map (kbd "C-c a") 'org-agenda)
+  ;; Org agenda stuff
+  (define-key global-map (kbd "C-c l") 'org-store-link)
+  (define-key global-map (kbd "C-c a") 'org-agenda)
+  (setq org-agenda-files (list "~/Documents/notes/work.org"))
 
   ;; use indentation for org heading levels
   (setq org-startup-indented t)
@@ -1169,3 +1171,5 @@ With arg N, insert N newlines."
 ;; (maybe-require-package 'github-clone)
 ;; (maybe-require-package 'magithub)
 #+END_SRC
+* swiper for searching
+ check out at [[https://github.com/abo-abo/swiper][github]]
