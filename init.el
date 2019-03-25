@@ -15,7 +15,7 @@
  '(custom-enabled-themes (quote (misterioso)))
  '(inhibit-startup-screen t)
  '(org-agenda-files (quote ("~/Documents/notes/work.org")))
- '(package-selected-packages (quote (company magit))))
+ '(package-selected-packages (quote (smex company magit))))
 
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
