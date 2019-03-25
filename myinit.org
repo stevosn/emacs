@@ -85,6 +85,7 @@ to read the orgfile as a myinit.el file! (which is created by org-babel..)
 * elpa
 #+BEGIN_SRC emacs-lisp
   (require 'package)
+  (add-to-list 'package-archives '("melpa-stable" . "https://stable.melpa.org/packages/"))
 
   ;; ;;; Install into separate package dirs for each Emacs version, to prevent bytecode incompatibility
   ;; (let ((versioned-package-dir
@@ -156,12 +157,13 @@ to read the orgfile as a myinit.el file! (which is created by org-babel..)
   (define-key global-map "\C-cl" 'org-store-link)
   (define-key global-map "\C-ca" 'org-agenda)
   (setq org-log-done t)
-  (setq org-agenda-files (list "~/Documents/notes/work.org"))
+  (setq org-agenda-files (list "~/Documents/notes/work.org" "~/Documents/notes/work_schedule.org"))
 #+END_SRC
 * smex
 #+BEGIN_SRC emacs-lisp
   ;; This section get's the simple M-x command handler
   ;; Use smex to handle M-x
+  (require-package 'smex)
   (when (maybe-require-package 'smex)
    ;; Change path for ~/.smex-items
    (setq-default smex-save-file (expand-file-name ".smex-items" user-emacs-directory))
