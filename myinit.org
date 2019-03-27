@@ -157,7 +157,82 @@ to read the orgfile as a myinit.el file! (which is created by org-babel..)
   (define-key global-map "\C-cl" 'org-store-link)
   (define-key global-map "\C-ca" 'org-agenda)
   (setq org-log-done t)
-  (setq org-agenda-files (list "~/Documents/notes/work.org" "~/Documents/notes/work_schedule.org"))
+  (setq org-agenda-files (list "~/Documents/notes/work/"))
+  
+  ;; use indentation for org heading levels
+  (setq org-startup-indented t)
+
+  ;; Various preferences
+  (setq org-log-done t
+        org-edit-timestamp-down-means-later t
+        org-archive-mark-done nil
+        org-hide-emphasis-markers t
+        org-catch-invisible-edits 'show
+        org-export-coding-system 'utf-8
+        ;org-fast-tag-selection-single-key 'expert
+        org-html-validation-link nil
+        org-export-kill-product-buffer-when-displayed t
+        org-tags-column 80
+        org-export-backends (quote (ascii html icalendar latex md))
+        org-startup-align-all-tables t)
+
+  ;; holding shift + coursor movement selects
+  (setq org-support-shift-select t)
+
+  ;;; To-do settings
+  ;; configuration:
+  ;; (key) -shortcut for C-c C-t key
+  ;; (!) - make a time stamp when keyword is used
+  ;; (@) - ask for a note
+  ;; (/!) - also make timestamp when exiting the keyword
+  (setq org-todo-keywords
+        (quote ((sequence "TODO(t)" "|" "DONE(d!)")
+                (sequence "PROJECT(p)" "|" "PROJECT DONE(!)" "PROJECT CANCELLED(@!)")
+                (sequence "MILESTONE(m)" "|" "MILESTONE REACHED(!)" "MILESTONE CANCELLED(@!)")
+                (sequence "WAITING(w@/!)" "DELEGATED(e!@)" "HOLD(h)" "|" "DONE(d!)" "CANCELLED(@!)")))
+        ;;org-todo-repeat-to-state "TODO"
+        )
+
+  ;; setup colors for keywords
+  (setq org-todo-keyword-faces
+        (quote (("TODO" :foreground "MediumSeaGreen" :weight bold :underline t)
+                ("DONE" :foreground "forestgreen")
+                ("CANCELLED" :foreground "DarkGreen")
+                ("MILESTONE" :foreground "orange" :weight bold)
+                ("MILESTONE REACHED" :foreground "orange" :weight bold)
+                ("MILESTONE CANCELLED" :foreground "Peru")
+                ("PROJECT" :foreground "MediumSlateBlue" :weight bold :underline t)
+                ("PROJECT DONE" :foreground "MediumSlateBlue" :weight bold :underline t)
+                ("PROJECT CANCELLED" :foreground "DarkSlateBlue" :underline t)
+                )))
+
+  ;; setup colors for ABC priorities
+  (setq org-priority-faces '((?A . (:foreground "gold" :weight bold))
+                             (?B . (:foreground "yellow"))
+                             (?C . (:foreground "DarkOliveGreen"))
+                             ))
+
+  ;; define Tags
+  (setq org-tag-alist '(("VE" . ?v)
+                        ("SV" . ?s)
+                        ("SVMeet" . ?S)
+                        ("TZM" . ?t)
+                        ("Flor" . ?f)
+                        ("Chri" . ?c)
+                        ("PM" . ?p)
+                        ("Doku" . ?d)))
+
+  ;; automatically set DONE or TODO depending on subtasks
+  (defun org-summary-todo (n-done n-not-done)
+    "Switch entry to DONE when all subentries are done, to TODO otherwise."
+    (let (org-log-done org-log-states)   ; turn off logging
+      (org-todo (if (= n-not-done 0) "DONE" "TODO"))))
+
+  ;; (add-hook 'org-after-todo-statistics-hook 'org-summary-todo)
+
+  ;; make unchecked checkboxes block DONE
+  (setq org-enforce-todo-checkbox-dependencies t)
+  (setq org-hierarchical-todo-statistics nil)
 #+END_SRC
 * smex
 #+BEGIN_SRC emacs-lisp
