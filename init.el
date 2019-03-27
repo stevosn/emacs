@@ -14,7 +14,7 @@
    [default default default italic underline success warning error])
  '(custom-enabled-themes (quote (misterioso)))
  '(inhibit-startup-screen t)
- ;;'(org-agenda-files (quote ("~/Documents/notes/work.org")))
+ '(org-agenda-files (quote ("~/Documents/notes/work.org")))
  '(package-selected-packages (quote (smex company magit))))
 
 (custom-set-faces
@@ -27,7 +27,8 @@
  '(org-level-2 ((t (:inherit outline-2 :height 1.15))))
  '(org-level-3 ((t (:inherit outline-3 :height 1.1))))
  '(org-level-4 ((t (:inherit outline-4 :height 1.05))))
- '(org-level-5 ((t (:inherit outline-5 :height 1.0)))))
+ '(org-level-5 ((t (:inherit outline-5 :height 1.0))))
+ '(org-special-keyword ((t (:foreground "dim gray")))))
 
 ;;; This file bootstraps the configuration, which is divided into
 ;;; a number of other files.
