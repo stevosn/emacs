@@ -23,10 +23,10 @@
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
  '(org-date ((t (:foreground "dim gray" :underline "dim gray"))))
- '(org-level-1 ((t (:inherit outline-1 :height 1.2))))
- '(org-level-2 ((t (:inherit outline-2 :height 1.15))))
- '(org-level-3 ((t (:inherit outline-3 :height 1.1))))
- '(org-level-4 ((t (:inherit outline-4 :height 1.05))))
+ '(org-level-1 ((t (:foreground "cyan" :height 1.35))))
+ '(org-level-2 ((t (:foreground "light goldenrod" :weight normal :height 1.2))))
+ '(org-level-3 ((t (:foreground "orange" :height 1.2))))
+ '(org-level-4 ((t (:foreground "OliveDrab3" :height 1.15))))
  '(org-level-5 ((t (:inherit outline-5 :height 1.0))))
  '(org-special-keyword ((t (:foreground "dim gray")))))
 
