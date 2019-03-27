@@ -138,6 +138,13 @@ to read the orgfile as a myinit.el file! (which is created by org-babel..)
 
   ;; (add-hook 'package-menu-mode-hook 'sanityinc/maybe-widen-package-menu-columns)
 #+END_SRC
+* editing
+#+BEGIN_SRC emacs-lisp
+;; enable unfilling
+(require-package 'unfill)
+(define-key global-map "\M-Q" 'unfill-region)
+
+#+END_SRC
 * multiple cursors
 #+BEGIN_SRC emacs-lisp
   ;; (require 'multiple-cursors)
