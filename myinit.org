@@ -164,8 +164,9 @@ to read the orgfile as a myinit.el file! (which is created by org-babel..)
   (define-key global-map "\C-cl" 'org-store-link)
   (define-key global-map "\C-ca" 'org-agenda)
   (setq org-log-done t)
+  (setq org-directory "~/Documents/notes/work")
   (setq org-agenda-files (list "~/Documents/notes/work/"))
-  
+
   ;; use indentation for org heading levels
   (setq org-startup-indented t)
 
