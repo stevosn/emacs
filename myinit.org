@@ -223,15 +223,17 @@ to read the orgfile as a myinit.el file! (which is created by org-babel..)
                              ))
 
   ;; define Tags
-  (setq org-tag-alist '(("VE" . ?v)
+  (setq org-tag-alist '(("VE" . ?V)
                         ("SV" . ?s)
+                        ("Meeting" . ?m)
                         ("SVMeet" . ?S)
                         ("TZM" . ?T)
                         ("Flor" . ?f)
                         ("Chri" . ?c)
                         ("PM" . ?p)
                         ("Doku" . ?d)
-                        ("Ticket" . ?t)))
+                        ("Ticket" . ?t)
+                        ("Vertrieb" . ?v)))
 
   ;; automatically set DONE or TODO depending on subtasks
   (defun org-summary-todo (n-done n-not-done)
