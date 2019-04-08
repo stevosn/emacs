@@ -167,6 +167,7 @@ to read the orgfile as a myinit.el file! (which is created by org-babel..)
 
   (setq org-log-done t)
   (setq org-directory "~/Documents/notes/work")
+  (setq org-default-notes-file (concat org-directory "/notes.org"))
 
   (setq org-agenda-files (list "~/Documents/notes/work/"))
 
