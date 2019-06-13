@@ -199,8 +199,8 @@ to read the orgfile as a myinit.el file! (which is created by org-babel..)
   ;; (/!) - also make timestamp when exiting the keyword
   (setq org-todo-keywords
         (quote ((sequence "TODO(t)" "|" "DONE(d!)")
-                (sequence "PROJECT(p)" "|" "PROJECT DONE(!)" "PROJECT CANCELLED(@!)")
-                (sequence "MILESTONE(m)" "|" "MILESTONE REACHED(!)" "MILESTONE CANCELLED(@!)")
+                (sequence "PROJECT(p)" "|" "DONE(d!)" "PROJECT DONE(!)" "PROJECT CANCELLED(@!)")
+                (sequence "MILESTONE(m)" "|" "DONE(d!)" "MILESTONE REACHED(!)" "MILESTONE CANCELLED(@!)")
                 (sequence "WAITING(w@/!)" "DELEGATED(e!@)" "HOLD(h)" "|" "DONE(d!)" "CANCELLED(@!)")))
         ;;org-todo-repeat-to-state "TODO"
         )
