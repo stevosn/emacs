@@ -227,13 +227,8 @@ to read the orgfile as a myinit.el file! (which is created by org-babel..)
   ;; define Tags
   (setq org-tag-alist '(("VE" . ?V)
                         ("SV" . ?s)
-                        ("Meeting" . ?m)
                         ("SVMeet" . ?S)
-                        ("TZM" . ?T)
-                        ("Flor" . ?f)
-                        ("Chri" . ?c)
                         ("PM" . ?p)
-                        ("Doku" . ?d)
                         ("Ticket" . ?t)
                         ("Vertrieb" . ?v)))
 
