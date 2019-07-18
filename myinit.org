@@ -2,7 +2,7 @@
 put in
 (org-babel-load-file (expand-file-name "~/.emacs.d/myinit.org"))
 to read the orgfile as a myinit.el file! (which is created by org-babel..)
-* Interface tweaks
+* COMMENT Interface tweaks
 #+BEGIN_SRC emacs-lisp
   ;; line number configuration
     (global-linum-mode t)
@@ -11,7 +11,7 @@ to read the orgfile as a myinit.el file! (which is created by org-babel..)
     (defun linum-on ()
      (unless (or (minibufferp)
       (member major-mode linum-disabled-modes-list))
-	(linum-mode 1)))
+        (linum-mode 1)))
 
   ;; no tool bar
   (tool-bar-mode -1)
@@ -45,10 +45,14 @@ to read the orgfile as a myinit.el file! (which is created by org-babel..)
   (setq-default
    recentf-max-saved-items 1000
    recentf-exclude '("/tmp/" "/ssh:"))
-   
+
+   ;; highlight current line and modify the color
+   (global-hl-line-mode 1)
+   (set-face-background 'hl-line "#3e4446")
+
    ;; Train myself to use M-f and M-b instead
-   (global-unset-key [M-left])
-   (global-unset-key [M-right])
+   ;; (global-unset-key [M-left])
+   ;; (global-unset-key [M-right])
 
 #+END_SRC
 * require-package
@@ -198,10 +202,10 @@ to read the orgfile as a myinit.el file! (which is created by org-babel..)
   ;; (@) - ask for a note
   ;; (/!) - also make timestamp when exiting the keyword
   (setq org-todo-keywords
-        (quote ((sequence "TODO(t)" "|" "DONE(d!)")
+        (quote ((sequence "TODO(t)" "NEXT(x)" "|" "DONE(d!)")
                 (sequence "PROJECT(p)" "|" "DONE(d!)" "PROJECT DONE(!)" "PROJECT CANCELLED(@!)")
                 (sequence "MILESTONE(m)" "|" "DONE(d!)" "MILESTONE REACHED(!)" "MILESTONE CANCELLED(@!)")
-                (sequence "WAITING(w@/!)" "DELEGATED(e!@)" "HOLD(h)" "|" "DONE(d!)" "CANCELLED(@!)")))
+                (sequence "WAITING(w@/!)" "HOLD(h)" "|" "DONE(d!)" "DELEGATED(e!@)" "CANCELLED(@!)")))
         ;;org-todo-repeat-to-state "TODO"
         )
 
@@ -227,9 +231,10 @@ to read the orgfile as a myinit.el file! (which is created by org-babel..)
   ;; define Tags
   (setq org-tag-alist '(("VE" . ?V)
                         ("SV" . ?s)
-                        ("SVMeet" . ?S)
+                        ("SVCM" . ?c)
                         ("PM" . ?p)
                         ("Ticket" . ?t)
+                        ("Stefan" . ?S)
                         ("Vertrieb" . ?v)))
 
   ;; automatically set DONE or TODO depending on subtasks
@@ -238,7 +243,7 @@ to read the orgfile as a myinit.el file! (which is created by org-babel..)
     (let (org-log-done org-log-states)   ; turn off logging
       (org-todo (if (= n-not-done 0) "DONE" "TODO"))))
 
-  ;; (add-hook 'org-after-todo-statistics-hook 'org-summary-todo)
+  (add-hook 'org-after-todo-statistics-hook 'org-summary-todo)
 
   ;; make unchecked checkboxes block DONE
   (setq org-enforce-todo-checkbox-dependencies t)
